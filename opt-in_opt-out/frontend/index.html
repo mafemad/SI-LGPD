@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preferências de Comunicação</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+    h2 {
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: red;
+      text-align: center;
+    }
+    .list {
+      margin-top: 20px;
+    }
+    .list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .list table, .list th, .list td {
+      border: 1px solid #ddd;
+    }
+    .list th, .list td {
+      padding: 8px;
+      text-align: left;
+    }
+    .list th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Preferências de Comunicação</h2>
+    <!-- Login Form -->
+    <div id="loginForm">
+      <input type="text" id="name" placeholder="Seu nome" required />
+      <button onclick="loginUser()">Login</button>
+      <button onclick="showRegisterForm()">Criar conta</button>
+      <p id="errorMessage" class="error"></p>
+    </div>
+    <!-- Register Form -->
+    <div id="registerForm" style="display: none;">
+      <input type="text" id="registerName" placeholder="Seu nome" required />
+      <label>
+        <input type="checkbox" id="pushNotifications" />
+        Notificações Push
+      </label><br>
+      <label>
+        <input type="checkbox" id="emailPromotions" />
+        E-mails promocionais
+      </label><br>
+      <label>
+        <input type="checkbox" id="smsMessages" />
+        SMS
+      </label><br>
+      <button onclick="registerUser()">Criar conta</button>
+      <button onclick="showLoginForm()">Já tenho uma conta</button>
+    </div>
+    <!-- Update Preferences Form -->
+    <div id="updatePreferencesForm" style="display: none;">
+      <h3>Atualizar Preferências</h3>
+      <label>
+        <input type="checkbox" id="updatePushNotifications" />
+        Notificações Push
+      </label><br>
+      <label>
+        <input type="checkbox" id="updateEmailPromotions" />
+        E-mails promocionais
+      </label><br>
+      <label>
+        <input type="checkbox" id="updateSmsMessages" />
+        SMS
+      </label><br>
+      <button onclick="updatePreferences()">Atualizar Preferências</button>
+      <button onclick="logout()">Sair</button>
+    </div>
+    <!-- Admin Panel -->
+    <div id="adminPanel" style="display: none;">
+      <h3>Admin - Listagem de Usuários</h3>
+      <button onclick="listUsers()">Listar Usuários</button>
+      <div id="usersList" class="list"></div>
+      <div id="userHistory" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000'; // Alterar caso o backend esteja em outro local
+    let currentUserId = null;
+    let isAdmin = false;
+
+    // Show Register Form
+    function showRegisterForm() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+    }
+
+    // Show Login Form
+    function showLoginForm() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+    }
+
+    // Login User
+    async function loginUser() {
+      const name = document.getElementById('name').value;
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = '';
+
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) throw new Error('Usuário não encontrado');
+        const data = await response.json();
+        currentUserId = data.id;
+        isAdmin = data.isAdmin;
+
+        alert('Login bem-sucedido! ID: ' + currentUserId);
+        if (isAdmin) {
+          document.getElementById('adminPanel').style.display = 'block';
+        } else {
+          document.getElementById('updatePreferencesForm').style.display = 'block';
+        }
+        document.getElementById('loginForm').style.display = 'none';
+      } catch (error) {
+        errorMessage.textContent = error.message;
+      }
+    }
+
+    // Register User
+    async function registerUser() {
+      const name = document.getElementById('registerName').value;
+      const pushNotifications = document.getElementById('pushNotifications').checked;
+      const emailPromotions = document.getElementById('emailPromotions').checked;
+      const smsMessages = document.getElementById('smsMessages').checked;
+
+      try {
+        const response = await fetch(`${API_URL}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            pushNotifications,
+            emailPromotions,
+            smsMessages,
+            isAdmin: false,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Erro ao criar conta');
+        const data = await response.json();
+        alert('Conta criada com sucesso! ID: ' + data.id);
+        showLoginForm();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Update Preferences
+    async function updatePreferences() {
+      const pushNotifications = document.getElementById('updatePushNotifications').checked;
+      const emailPromotions = document.getElementById('updateEmailPromotions').checked;
+      const smsMessages = document.getElementById('updateSmsMessages').checked;
+
+      try {
+        const response = await fetch(`${API_URL}/users/${currentUserId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pushNotifications,
+            emailPromotions,
+            smsMessages,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Erro ao atualizar preferências');
+        alert('Preferências atualizadas com sucesso!');
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Logout User
+    function logout() {
+      currentUserId = null;
+      isAdmin = false;
+      document.getElementById('updatePreferencesForm').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'none';
+      showLoginForm();
+    }
+
+    // List Users (Admin Only)
+    async function listUsers() {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        if (!response.ok) throw new Error('Erro ao buscar usuários');
+        const users = await response.json();
+        displayUsers(users);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Display Users List
+    function displayUsers(users) {
+        const usersList = document.getElementById('usersList');
+        let html = '<table><tr><th>ID</th><th>Nome</th><th>Preferências</th><th>Histórico</th></tr>';
+
+        users.forEach(user => {
+            const prefs = user.preference || {};
+            html += `<tr>
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>
+                Push: ${prefs.pushNotifications ? 'Sim' : 'Não'}, 
+                E-mail: ${prefs.emailPromotions ? 'Sim' : 'Não'}, 
+                SMS: ${prefs.smsMessages ? 'Sim' : 'Não'}
+            </td>
+            <td><button onclick="getUserHistory('${user.id}')">Ver Histórico</button></td>
+            </tr>`;
+        });
+
+        html += '</table>';
+        usersList.innerHTML = html;
+    }
+
+    // Get User History
+    async function getUserHistory(userId) {
+      try {
+        const response = await fetch(`${API_URL}/history/${userId}`);
+        if (!response.ok) throw new Error('Erro ao buscar histórico');
+        const history = await response.json();
+        displayHistory(history);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Display User History
+    function displayHistory(history) {
+      const userHistory = document.getElementById('userHistory');
+      let html = '<h4>Histórico de Alterações</h4><ul>';
+
+      history.forEach(item => {
+        html += `<li>
+          Tipo: ${item.preferenceType}, 
+          Ação: ${item.action === 'opt-in' ? 'Ativado' : 'Desativado'}, 
+          Data: ${new Date(item.timestamp).toLocaleString()}
+        </li>`;
+      });
+
+      html += '</ul>';
+      userHistory.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
