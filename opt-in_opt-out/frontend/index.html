@@ -16,10 +16,10 @@
     }
     .container {
       background: white;
-      padding: 20px;
+      padding: 30px 50px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 400px;
+      width: auto;
     }
     h2 {
       text-align: center;
@@ -59,6 +59,88 @@
     .list th {
       background-color: #f2f2f2;
     }
+
+    #loginForm{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #loginForm input {
+      width: 80%;
+      max-width: 300px;
+    }
+
+    #adminPanel {
+      text-align: center;
+    }
+
+    #adminPanel button {
+      margin: 10px;
+      display: block;
+    }
+
+    .login-buttons {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      max-width: 300px;
+      gap: 10px;
+    }
+
+    .login-buttons button {
+      flex: 1;
+    }
+
+    #usersList table {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    #usersList th, #usersList td {
+      word-wrap: break-word;
+      white-space: normal;
+    }
+
+    .admin-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .preferences-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    #registerForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+#registerName {
+  width: 100%;
+}
+
+#registerForm label {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+#registerForm input[type="checkbox"] {
+  margin-left: 70px;
+}
+
   </style>
 </head>
 <body>
@@ -67,24 +149,23 @@
     <!-- Login Form -->
     <div id="loginForm">
       <input type="text" id="name" placeholder="Seu nome" required />
-      <button onclick="loginUser()">Login</button>
-      <button onclick="showRegisterForm()">Criar conta</button>
+      <div class="login-buttons">
+        <button onclick="loginUser()">Login</button>
+        <button onclick="showRegisterForm()">Criar conta</button>
+      </div>
       <p id="errorMessage" class="error"></p>
     </div>
     <!-- Register Form -->
     <div id="registerForm" style="display: none;">
       <input type="text" id="registerName" placeholder="Seu nome" required />
       <label>
-        <input type="checkbox" id="pushNotifications" />
-        Notificações Push
-      </label><br>
-      <label>
-        <input type="checkbox" id="emailPromotions" />
-        E-mails promocionais
-      </label><br>
-      <label>
-        <input type="checkbox" id="smsMessages" />
-        SMS
+        <input type="checkbox" id="pushNotifications" />&nbspNotificações Push
+      </label>
+      <label>        
+        <input type="checkbox" id="emailPromotions" />&nbspE-mails promocionais
+      </label>
+      <label>        
+        <input type="checkbox" id="smsMessages" />&nbspSMS
       </label><br>
       <button onclick="registerUser()">Criar conta</button>
       <button onclick="showLoginForm()">Já tenho uma conta</button>
@@ -104,13 +185,18 @@
         <input type="checkbox" id="updateSmsMessages" />
         SMS
       </label><br>
-      <button onclick="updatePreferences()">Atualizar Preferências</button>
-      <button onclick="logout()">Sair</button>
+      <div class="preferences-buttons">
+        <button onclick="updatePreferences()">Atualizar Preferências</button>
+        <button onclick="logout()">Sair</button>
+      </div>
     </div>
     <!-- Admin Panel -->
     <div id="adminPanel" style="display: none;">
       <h3>Admin - Listagem de Usuários</h3>
-      <button onclick="listUsers()">Listar Usuários</button>
+      <div class="admin-buttons">
+        <button onclick="listUsers()">Listar Usuários</button>
+        <button onclick="logout()">Sair</button>
+      </div>
       <div id="usersList" class="list"></div>
       <div id="userHistory" class="list"></div>
     </div>
@@ -203,7 +289,7 @@
       const smsMessages = document.getElementById('updateSmsMessages').checked;
 
       try {
-        const response = await fetch(`${API_URL}/users/${currentUserId}`, {
+        const response = await fetch(`${API_URL}/preferences/${currentUserId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
