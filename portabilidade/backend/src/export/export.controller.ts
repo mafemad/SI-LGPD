@@ -24,12 +24,12 @@ export class ExportController {
   @Post('send-email/:userId')
   async sendByEmail(
     @Param('userId') userId: number,
-    @Body() body: { format: 'json' | 'csv' | 'pdf'; email: string },
+    @Body() body: { format: 'json' | 'csv' | 'pdf' }
   ) {
-    await this.exportService.sendByEmail(userId, body.format, body.email);
+    await this.exportService.sendByEmail(userId, body.format);
     return { message: 'Email enviado com sucesso!' };
   }
-
+  
   private getMimeType(format: string): string {
     if (format === 'json') return 'application/json';
     if (format === 'csv') return 'text/csv';

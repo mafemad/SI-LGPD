@@ -63,17 +63,14 @@ export class ExportService {
     return fileContent;
   }
 
-  async sendByEmail(userId: number, format: 'json' | 'csv' | 'pdf', recipientEmail: string) {
+  async sendByEmail(userId: number, format: 'json' | 'csv' | 'pdf') {
     const user = await this.userService.findById(userId);
-
-    if (!user) {
-      throw new Error('Usuário não encontrado');
-    }
-
+    if (!user) throw new Error('Usuário não encontrado');
+  
     const fileContent = await this.exportUserData(userId, format);
-
+  
     await this.mailerService.sendMail({
-      to: recipientEmail,
+      to: user.email, // pega direto do usuário
       from: process.env.EMAIL_FROM,
       subject: 'Seus dados exportados',
       text: 'Segue em anexo o arquivo com seus dados pessoais conforme solicitado.',
