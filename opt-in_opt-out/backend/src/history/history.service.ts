@@ -11,6 +11,10 @@ export class HistoryService {
   ) {}
 
   getByUser(userId: string) {
-    return this.historyRepo.find({ where: { userId }, order: { timestamp: 'DESC' } });
+    return this.historyRepo.find({
+      where: { userId },
+      relations: ['preference'],
+      order: { timestamp: 'DESC' },
+    });
   }
 }

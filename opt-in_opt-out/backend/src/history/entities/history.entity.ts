@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Preference } from 'src/preferences/entities/preference.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class History {
@@ -8,8 +9,8 @@ export class History {
   @Column()
   userId: string;
 
-  @Column()
-  preferenceType: 'push' | 'email' | 'sms';
+  @ManyToOne(() => Preference)
+  preference: Preference;
 
   @Column()
   action: 'opt-in' | 'opt-out';

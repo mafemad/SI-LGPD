@@ -10,19 +10,20 @@ import { UserController } from './user/user.controller';
 import { PreferenceController } from './preferences/preferences.controller';
 import { HistoryController } from './history/history.controller';
 import { AuthModule } from './auth/auth.module';
+import { UserPreference } from './preferences/entities/userPreference.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
-      entities: [User, Preference, History],
+      entities: [User, Preference, UserPreference, History],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Preference, History]),
+    TypeOrmModule.forFeature([User, Preference, UserPreference, History]),
     AuthModule,
   ],
-  controllers: [UserController, PreferenceController, HistoryController,],
+  controllers: [UserController, PreferenceController, HistoryController],
   providers: [UserService, PreferenceService, HistoryService],
 })
 export class AppModule {}

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Preference } from 'src/preferences/entities/preference.entity'
+import { UserPreference } from 'src/preferences/entities/userPreference.entity';
 
 @Entity()
 export class User {
@@ -12,7 +13,7 @@ export class User {
   @Column({ default: false })
   isAdmin: boolean;
 
-  @OneToOne(() => Preference, { cascade: true, eager: true })
-  @JoinColumn()
-  preference: Preference;
+  @OneToMany(() => UserPreference, up => up.user, { cascade: true })
+  preferences: UserPreference[];
 }
+

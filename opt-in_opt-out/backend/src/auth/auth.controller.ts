@@ -13,13 +13,23 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    const user = await this.userRepo.findOne({ where: { name: dto.name }, relations: ['preference'] });
+    const user = await this.userRepo.findOne({
+      where: { name: dto.name },
+      relations: ['preferences', 'preferences.preference'],
+    });
+
     if (!user) throw new NotFoundException('Usuário não encontrado');
+
+    const preferences = user.preferences.reduce((acc, up) => {
+      acc[up.preference.name] = up.optedIn;
+      return acc;
+    }, {} as Record<string, boolean>);
+
     return {
       id: user.id,
       name: user.name,
       isAdmin: user.isAdmin,
-      preferences: user.preference,
+      preferences,
     };
   }
 }

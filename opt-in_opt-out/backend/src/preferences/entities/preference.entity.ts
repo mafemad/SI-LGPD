@@ -5,12 +5,10 @@ export class Preference {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: false })
-  pushNotifications: boolean;
+  @Column({ unique: true })
+  name: string;
 
-  @Column({ default: false })
-  emailPromotions: boolean;
-
-  @Column({ default: false })
-  smsMessages: boolean;
+  @Column({ nullable: true })
+  description: string;
 }
+
