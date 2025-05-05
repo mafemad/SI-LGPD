@@ -9,7 +9,7 @@ export class History {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Preference)
+  @ManyToOne(() => Preference,{ onDelete: 'CASCADE' } )
   preference: Preference;
 
   @Column()

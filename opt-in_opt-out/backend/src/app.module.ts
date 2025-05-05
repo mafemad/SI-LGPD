@@ -11,19 +11,27 @@ import { PreferenceController } from './preferences/preferences.controller';
 import { HistoryController } from './history/history.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserPreference } from './preferences/entities/userPreference.entity';
+import { Notification } from './notification/entities/notification.entity';
+import { NotificationModule } from './notification/notification.module';
+import { NotificationController } from './notification/notification.controller';
+import { NotificationService } from './notification/notification.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
-      entities: [User, Preference, UserPreference, History],
+      entities: [User, Preference, UserPreference, History, Notification],
       synchronize: true,
+      extra: {
+        foreign_keys: true, // Habilitar restrições de chaves estrangeiras
+      },
     }),
-    TypeOrmModule.forFeature([User, Preference, UserPreference, History]),
+    TypeOrmModule.forFeature([User, Preference, UserPreference, History, Notification]),
     AuthModule,
+    NotificationModule,
   ],
-  controllers: [UserController, PreferenceController, HistoryController],
-  providers: [UserService, PreferenceService, HistoryService],
+  controllers: [UserController, PreferenceController, HistoryController,NotificationController],
+  providers: [UserService, PreferenceService, HistoryService, NotificationService],
 })
 export class AppModule {}

@@ -43,13 +43,10 @@ export default function Register() {
         value={name}
         onChange={e => setName(e.target.value)}
       />
-      <label className="flex items-center gap-2">
-      </label>
-
       <div className="w-64">
         <p className="font-medium">Preferências:</p>
         {preferences.map(pref => (
-          <label key={pref.id} className="block text-sm">
+          <label key={pref.id} className="block text-sm flex items-center gap-2 mb-2">
             <input
               type="checkbox"
               checked={selectedPrefs[pref.name] || false}
@@ -60,7 +57,8 @@ export default function Register() {
                 }))
               }
             />{' '}
-            {pref.name}
+            <span>{pref.name}</span>
+            <span className="ml-2 text-xs text-gray-600">({pref.description})</span>
           </label>
         ))}
       </div>

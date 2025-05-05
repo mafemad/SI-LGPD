@@ -7,10 +7,10 @@ export class UserPreference {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, user => user.preferences)
+  @ManyToOne(() => User, (user) => user.preferences, { onDelete: 'CASCADE' })
   user: User;
 
-  @ManyToOne(() => Preference)
+  @ManyToOne(() => Preference, { onDelete: 'CASCADE' })
   preference: Preference;
 
   @Column()

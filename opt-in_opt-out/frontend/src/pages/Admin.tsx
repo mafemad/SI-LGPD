@@ -5,10 +5,10 @@ import type { Preference, User, HistoryEntry } from '../types';
 export default function Admin() {
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [history, setHistory] = useState<Record<string, HistoryEntry[]>>({});
   const [newPref, setNewPref] = useState({ name: '', description: '' });
   const [newUser, setNewUser] = useState({ name: '', isAdmin: false });
   const [newUserPrefs, setNewUserPrefs] = useState<Record<string, boolean>>({});
+  const [history, setHistory] = useState<Record<string, HistoryEntry[]>>({});
 
   useEffect(() => {
     fetchPreferences();
@@ -27,31 +27,26 @@ export default function Admin() {
 
   const handleCreatePreference = async () => {
     if (!newPref.name.trim()) return alert('Nome é obrigatório');
-    await api.post('/preferences/create', newPref);
-    setNewPref({ name: '', description: '' });
-    fetchPreferences();
+    try {
+      await api.post('/preferences/create', newPref);
+      setNewPref({ name: '', description: '' });
+      fetchPreferences();
+    } catch (err) {
+      alert('Erro ao criar preferência');
+    }
   };
 
   const handleDeletePreference = async (id: string) => {
     await api.post('/preferences/delete', { id });
     fetchPreferences();
-    fetchUsers(); // Atualiza porque preferências dos usuários também mudam
-  };
-
-  const handleCreateUser = async () => {
-    if (!newUser.name.trim()) return alert('Nome é obrigatório');
-    await api.post('/users', {
-      ...newUser,
-      preferences: newUserPrefs,
-    });
-    setNewUser({ name: '', isAdmin: false });
-    setNewUserPrefs({});
     fetchUsers();
   };
 
   const handleUpdateUserPrefs = async (userId: string, prefs: Record<string, boolean>) => {
     await api.put(`/preferences/${userId}`, prefs);
-    fetchUsers();
+    setUsers(prev =>
+      prev.map(u => (u.id === userId ? { ...u, preferences: prefs } : u))
+    );
   };
 
   const handleGetHistory = async (userId: string) => {
@@ -60,27 +55,30 @@ export default function Admin() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Área Administrativa</h1>
 
-      <div className="mb-8">
+      <section className="mb-8">
         <h2 className="text-xl font-semibold">Preferências</h2>
         <table className="w-full my-2 border">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2">Nome</th>
-              <th className="p-2">Descrição</th>
-              <th className="p-2">Ações</th>
+            <tr className="bg-gray-100">
+              <th className="p-2 text-left">Nome</th>
+              <th className="p-2 text-left">Descrição</th>
+              <th className="p-2">Ação</th>
             </tr>
           </thead>
           <tbody>
-            {preferences.map(p => (
-              <tr key={p.id} className="border-t">
-                <td className="p-2">{p.name}</td>
-                <td className="p-2">{p.description}</td>
-                <td className="p-2">
-                  <button onClick={() => handleDeletePreference(p.id)} className="text-red-500">
-                    Deletar
+            {preferences.map(pref => (
+              <tr key={pref.id} className="border-t">
+                <td className="p-2">{pref.name}</td>
+                <td className="p-2">{pref.description}</td>
+                <td className="p-2 text-center">
+                  <button
+                    onClick={() => handleDeletePreference(pref.id)}
+                    className="text-red-600 underline"
+                  >
+                    Excluir
                   </button>
                 </td>
               </tr>
@@ -88,85 +86,43 @@ export default function Admin() {
           </tbody>
         </table>
 
-        <div className="flex gap-2 mt-4">
+        <div className="mt-4">
           <input
             type="text"
             placeholder="Nome"
             value={newPref.name}
-            onChange={e => setNewPref(prev => ({ ...prev, name: e.target.value }))}
-            className="border p-2"
+            onChange={e => setNewPref({ ...newPref, name: e.target.value })}
+            className="border px-2 py-1 mr-2"
           />
           <input
             type="text"
             placeholder="Descrição"
             value={newPref.description}
-            onChange={e => setNewPref(prev => ({ ...prev, description: e.target.value }))}
-            className="border p-2"
+            onChange={e => setNewPref({ ...newPref, description: e.target.value })}
+            className="border px-2 py-1 mr-2"
           />
-          <button onClick={handleCreatePreference} className="bg-blue-500 text-white px-4">
-            Criar Preferência
+          <button onClick={handleCreatePreference} className="bg-blue-600 text-white px-3 py-1 rounded">
+            Criar
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold">Criar Usuário</h2>
-        <div className="flex gap-2 mt-2">
-          <input
-            type="text"
-            placeholder="Nome"
-            value={newUser.name}
-            onChange={e => setNewUser({ ...newUser, name: e.target.value })}
-            className="border p-2"
-          />
-          <label className="flex items-center gap-1">
-            <input
-              type="checkbox"
-              checked={newUser.isAdmin}
-              onChange={e => setNewUser({ ...newUser, isAdmin: e.target.checked })}
-            />
-            Admin
-          </label>
-        </div>
-        <div className="mt-2">
-          <p className="font-medium">Preferências:</p>
-          {preferences.map(pref => (
-            <label key={pref.id} className="mr-4">
-              <input
-                type="checkbox"
-                checked={newUserPrefs[pref.name] || false}
-                onChange={e =>
-                  setNewUserPrefs(prev => ({
-                    ...prev,
-                    [pref.name]: e.target.checked,
-                  }))
-                }
-              />{' '}
-              {pref.name}
-            </label>
-          ))}
-        </div>
-        <button onClick={handleCreateUser} className="mt-2 bg-green-500 text-white px-4">
-          Criar Usuário
-        </button>
-      </div>
-
-      <div>
+      <section>
         <h2 className="text-xl font-semibold">Usuários</h2>
         {users.map(user => (
           <div key={user.id} className="border rounded p-4 my-2">
             <p>
-              <strong>{user.name}</strong> ({user.isAdmin ? 'Admin' : 'Usuário'})
+              <strong>{user.name}</strong> ({user.isAdmin ? 'Admin' : 'Usuário'}){' '}
               <button
                 onClick={() => handleGetHistory(user.id)}
-                className="ml-4 text-blue-500 underline"
+                className="ml-4 text-blue-600 underline"
               >
                 Ver histórico
               </button>
             </p>
             <div className="mt-2">
               {preferences.map(pref => (
-                <label key={pref.name} className="mr-4">
+                <label key={pref.name} className="block text-sm mb-1">
                   <input
                     type="checkbox"
                     checked={user.preferences[pref.name] || false}
@@ -178,18 +134,18 @@ export default function Admin() {
                       handleUpdateUserPrefs(user.id, updated);
                     }}
                   />{' '}
-                  {pref.name}
+                  <strong>{pref.name}</strong> – {pref.description}
                 </label>
               ))}
             </div>
             {history[user.id] && (
-              <div className="mt-2 text-sm text-gray-700">
+              <div className="mt-3 bg-gray-100 p-2 rounded">
                 <p className="font-semibold">Histórico:</p>
-                <ul>
+                <ul className="text-sm list-disc pl-4">
                   {history[user.id].map(h => (
                     <li key={h.id}>
-                      [{new Date(h.timestamp).toLocaleString()}] {h.action} -{' '}
-                      {h.preference?.name || 'Preferência removida'}
+                      [{new Date(h.timestamp).toLocaleString()}] {h.action}{' '}
+                      <strong>{h.preference?.name || 'Preferência removida'}</strong>
                     </li>
                   ))}
                 </ul>
@@ -197,7 +153,7 @@ export default function Admin() {
             )}
           </div>
         ))}
-      </div>
+      </section>
     </div>
   );
 }
