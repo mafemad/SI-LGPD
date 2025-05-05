@@ -1,10 +1,15 @@
-import { Controller, Put, Param, Body, Post } from '@nestjs/common';
+import { Controller, Put, Param, Body, Post, Get } from '@nestjs/common';
 import { PreferenceService } from './preferences.service';
 import { UpdatePreferenceDto } from './dto/update-preference.dto';
 
 @Controller('preferences')
 export class PreferenceController {
   constructor(private readonly prefService: PreferenceService) {}
+
+  @Get()
+  findAll() {
+    return this.prefService.findAll();
+  }
 
   @Put(':userId')
   update(@Param('userId') userId: string, @Body() dto: Record<string, boolean>) {

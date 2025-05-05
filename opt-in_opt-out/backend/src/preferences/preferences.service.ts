@@ -23,6 +23,11 @@ export class PreferenceService {
     private historyRepo: Repository<History>,
   ) {}
 
+  async findAll() {
+    return this.prefRepo.find();
+  }
+  
+
   async updatePreferences(userId: string, updates: { [prefId: string]: boolean }) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Usuário não encontrado');
@@ -35,7 +40,7 @@ export class PreferenceService {
     const historyEntries: Partial<History>[] = [];
 
     for (const userPref of userPrefs) {
-      const newValue = updates[userPref.preference.id];
+      const newValue = updates[userPref.preference.name];
       if (newValue !== undefined && newValue !== userPref.optedIn) {
         historyEntries.push({
           userId,

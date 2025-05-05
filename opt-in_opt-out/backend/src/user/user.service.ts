@@ -24,26 +24,25 @@ export class UserService {
       name: dto.name,
       isAdmin: dto.isAdmin ?? false,
     });
-
+  
     const savedUser = await this.userRepo.save(user);
-
-    // Busca todas as preferências existentes para aplicar ao usuário
+  
     const allPreferences = await this.prefRepo.find();
     const userPrefs = allPreferences.map(pref => {
       const up = new UserPreference();
       up.user = savedUser;
       up.preference = pref;
-      up.optedIn = false; // padrão: desativado
+      up.optedIn = dto.preferences?.[pref.name] ?? false; // Aqui aplicamos as preferências enviadas
       return up;
     });
-
+  
     await this.userPrefRepo.save(userPrefs);
     return this.userRepo.findOne({
       where: { id: savedUser.id },
       relations: ['preferences', 'preferences.preference'],
     });
   }
-
+  
   findAll() {
     return this.userRepo.find({
       relations: ['preferences', 'preferences.preference'],
