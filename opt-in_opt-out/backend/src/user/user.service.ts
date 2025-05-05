@@ -24,28 +24,55 @@ export class UserService {
       name: dto.name,
       isAdmin: dto.isAdmin ?? false,
     });
-  
+
     const savedUser = await this.userRepo.save(user);
-  
+
     const allPreferences = await this.prefRepo.find();
     const userPrefs = allPreferences.map(pref => {
       const up = new UserPreference();
       up.user = savedUser;
       up.preference = pref;
-      up.optedIn = dto.preferences?.[pref.name] ?? false; // Aqui aplicamos as preferências enviadas
+      up.optedIn = dto.preferences?.[pref.name] ?? false;
       return up;
     });
-  
+
     await this.userPrefRepo.save(userPrefs);
-    return this.userRepo.findOne({
-      where: { id: savedUser.id },
-      relations: ['preferences', 'preferences.preference'],
-    });
+
+    return this.getUserWithPreferenceMap(savedUser.id);
   }
-  
-  findAll() {
-    return this.userRepo.find({
+
+  async findAll() {
+    const users = await this.userRepo.find({
       relations: ['preferences', 'preferences.preference'],
     });
+
+    return users.map(user => this.transformUser(user));
+  }
+
+  private transformUser(user: User) {
+    const preferenceMap: Record<string, boolean> = {};
+
+    for (const up of user.preferences || []) {
+      if (up.preference?.name) {
+        preferenceMap[up.preference.name] = up.optedIn;
+      }
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      isAdmin: user.isAdmin,
+      preferences: preferenceMap,
+    };
+  }
+
+  private async getUserWithPreferenceMap(id: string) {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: ['preferences', 'preferences.preference'],
+    });
+
+    if (!user) return null;
+    return this.transformUser(user);
   }
 }

@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import api from '../api/api';
 import type { Preference, User, HistoryEntry } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [newPref, setNewPref] = useState({ name: '', description: '' });
-  const [newUser, setNewUser] = useState({ name: '', isAdmin: false });
-  const [newUserPrefs, setNewUserPrefs] = useState<Record<string, boolean>>({});
   const [history, setHistory] = useState<Record<string, HistoryEntry[]>>({});
+  const [openHistory, setOpenHistory] = useState<Record<string, boolean>>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPreferences();
@@ -42,41 +43,60 @@ export default function Admin() {
     fetchUsers();
   };
 
-  const handleUpdateUserPrefs = async (userId: string, prefs: Record<string, boolean>) => {
-    await api.put(`/preferences/${userId}`, prefs);
-    setUsers(prev =>
-      prev.map(u => (u.id === userId ? { ...u, preferences: prefs } : u))
-    );
+  const handleToggleHistory = async (userId: string) => {
+    const isOpen = openHistory[userId];
+    if (isOpen) {
+      setOpenHistory(prev => ({ ...prev, [userId]: false }));
+    } else {
+      if (!history[userId]) {
+        const res = await api.get(`/history/${userId}`);
+        setHistory(prev => ({ ...prev, [userId]: res.data }));
+      }
+      setOpenHistory(prev => ({ ...prev, [userId]: true }));
+    }
   };
 
-  const handleGetHistory = async (userId: string) => {
-    const res = await api.get(`/history/${userId}`);
-    setHistory(prev => ({ ...prev, [userId]: res.data }));
+  const handleLogout = () => {
+    // Limpar o localStorage ou qualquer outro dado de sessão
+    localStorage.removeItem('user');
+    // Redirecionar para a página de login
+    navigate('/');
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Área Administrativa</h1>
+    <div className="p-6 max-w-5xl mx-auto bg-white shadow-md rounded">
+      <h1 className="text-3xl font-bold mb-6 text-center">Área Administrativa</h1>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold">Preferências</h2>
-        <table className="w-full my-2 border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 text-left">Nome</th>
-              <th className="p-2 text-left">Descrição</th>
-              <th className="p-2">Ação</th>
+      {/* Botão de logout */}
+      <div className="text-right mb-4">
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Gerenciar Preferências</h2>
+
+        <table className="w-full text-left border border-gray-200 mb-4">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-3 border-b">Nome</th>
+              <th className="p-3 border-b">Descrição</th>
+              <th className="p-3 border-b text-center">Ação</th>
             </tr>
           </thead>
           <tbody>
             {preferences.map(pref => (
               <tr key={pref.id} className="border-t">
-                <td className="p-2">{pref.name}</td>
-                <td className="p-2">{pref.description}</td>
-                <td className="p-2 text-center">
+                <td className="p-3">{pref.name}</td>
+                <td className="p-3">{pref.description}</td>
+                <td className="p-3 text-center">
                   <button
                     onClick={() => handleDeletePreference(pref.id)}
-                    className="text-red-600 underline"
+                    className="text-red-600 underline hover:text-red-800"
                   >
                     Excluir
                   </button>
@@ -86,66 +106,72 @@ export default function Admin() {
           </tbody>
         </table>
 
-        <div className="mt-4">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="text"
             placeholder="Nome"
             value={newPref.name}
             onChange={e => setNewPref({ ...newPref, name: e.target.value })}
-            className="border px-2 py-1 mr-2"
+            className="border px-3 py-2 rounded w-48"
           />
           <input
             type="text"
             placeholder="Descrição"
             value={newPref.description}
             onChange={e => setNewPref({ ...newPref, description: e.target.value })}
-            className="border px-2 py-1 mr-2"
+            className="border px-3 py-2 rounded flex-1"
           />
-          <button onClick={handleCreatePreference} className="bg-blue-600 text-white px-3 py-1 rounded">
+          <button
+            onClick={handleCreatePreference}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
             Criar
           </button>
         </div>
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold">Usuários</h2>
+        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Usuários</h2>
         {users.map(user => (
-          <div key={user.id} className="border rounded p-4 my-2">
-            <p>
-              <strong>{user.name}</strong> ({user.isAdmin ? 'Admin' : 'Usuário'}){' '}
+          <div key={user.id} className="border rounded p-5 mb-5 bg-gray-50 shadow-sm">
+            <p className="font-semibold text-lg">
+              {user.name}{' '}
+              <span className="text-sm text-gray-600">
+                ({user.isAdmin ? 'Admin' : 'Usuário'})
+              </span>
               <button
-                onClick={() => handleGetHistory(user.id)}
-                className="ml-4 text-blue-600 underline"
+                onClick={() => handleToggleHistory(user.id)}
+                className="ml-4 text-blue-600 underline text-sm"
               >
-                Ver histórico
+                {openHistory[user.id] ? 'Fechar histórico' : 'Ver histórico'}
               </button>
             </p>
+
             <div className="mt-2">
-              {preferences.map(pref => (
-                <label key={pref.name} className="block text-sm mb-1">
-                  <input
-                    type="checkbox"
-                    checked={user.preferences[pref.name] || false}
-                    onChange={e => {
-                      const updated = {
-                        ...user.preferences,
-                        [pref.name]: e.target.checked,
-                      };
-                      handleUpdateUserPrefs(user.id, updated);
-                    }}
-                  />{' '}
-                  <strong>{pref.name}</strong> – {pref.description}
-                </label>
-              ))}
+              <p className="font-semibold">Preferências Ativas:</p>
+              {Object.entries(user.preferences)
+                .filter(([_, isActive]) => isActive)
+                .map(([prefKey]) => {
+                  const pref = preferences.find(p => p.name === prefKey);
+                  return (
+                    <div key={prefKey} className="text-sm pl-2 mb-1">
+                      ✅ <strong>{pref?.name || prefKey}</strong>{' '}
+                      {pref?.description ? `– ${pref.description}` : ''}
+                    </div>
+                  );
+                })}
             </div>
-            {history[user.id] && (
-              <div className="mt-3 bg-gray-100 p-2 rounded">
-                <p className="font-semibold">Histórico:</p>
-                <ul className="text-sm list-disc pl-4">
+
+            {openHistory[user.id] && history[user.id] && (
+              <div className="mt-4 bg-white border border-gray-200 p-4 rounded">
+                <p className="font-semibold mb-2">Histórico de Alterações:</p>
+                <ul className="list-disc pl-5 text-sm space-y-1">
                   {history[user.id].map(h => (
                     <li key={h.id}>
-                      [{new Date(h.timestamp).toLocaleString()}] {h.action}{' '}
-                      <strong>{h.preference?.name || 'Preferência removida'}</strong>
+                      <span className="text-gray-600">
+                        [{new Date(h.timestamp).toLocaleString()}]
+                      </span>{' '}
+                      {h.action} <strong>{h.preference?.name || 'Preferência removida'}</strong>
                     </li>
                   ))}
                 </ul>
