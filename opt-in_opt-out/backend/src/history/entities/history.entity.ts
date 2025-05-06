@@ -9,8 +9,15 @@ export class History {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Preference,{ onDelete: 'CASCADE' } )
-  preference: Preference;
+  @ManyToOne(() => Preference, {
+    onDelete: 'SET NULL',
+    nullable: true,
+    eager: true,
+  })
+  preference: Preference | null;
+
+  @Column()
+  preferenceName: string;
 
   @Column()
   action: 'opt-in' | 'opt-out';

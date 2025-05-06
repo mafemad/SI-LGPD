@@ -32,7 +32,7 @@ export default function Admin() {
       await api.post('/preferences/create', newPref);
       setNewPref({ name: '', description: '' });
       fetchPreferences();
-    } catch (err) {
+    } catch {
       alert('Erro ao criar preferência');
     }
   };
@@ -57,18 +57,14 @@ export default function Admin() {
   };
 
   const handleLogout = () => {
-    // Limpar o localStorage ou qualquer outro dado de sessão
     localStorage.removeItem('user');
-    // Redirecionar para a página de login
     navigate('/');
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto bg-white shadow-md rounded">
-      <h1 className="text-3xl font-bold mb-6 text-center">Área Administrativa</h1>
-
-      {/* Botão de logout */}
-      <div className="text-right mb-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Painel Administrativo</h1>
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
@@ -77,8 +73,9 @@ export default function Admin() {
         </button>
       </div>
 
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Gerenciar Preferências</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-2">Gerenciar Preferências</h2>
+        <p className="text-gray-600 mb-4">Adicione ou remova preferências de notificação disponíveis aos usuários.</p>
 
         <table className="w-full text-left border border-gray-200 mb-4">
           <thead className="bg-gray-100">
@@ -90,7 +87,7 @@ export default function Admin() {
           </thead>
           <tbody>
             {preferences.map(pref => (
-              <tr key={pref.id} className="border-t">
+              <tr key={pref.id} className="border-t hover:bg-gray-50">
                 <td className="p-3">{pref.name}</td>
                 <td className="p-3">{pref.description}</td>
                 <td className="p-3 text-center">
@@ -106,7 +103,7 @@ export default function Admin() {
           </tbody>
         </table>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 mt-4">
           <input
             type="text"
             placeholder="Nome"
@@ -131,9 +128,11 @@ export default function Admin() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Usuários</h2>
+        <h2 className="text-2xl font-semibold mb-2">Usuários</h2>
+        <p className="text-gray-600 mb-4">Visualize as preferências e o histórico de alterações de cada usuário.</p>
+
         {users.map(user => (
-          <div key={user.id} className="border rounded p-5 mb-5 bg-gray-50 shadow-sm">
+          <div key={user.id} className="border rounded p-5 mb-6 bg-gray-50 shadow-sm">
             <p className="font-semibold text-lg">
               {user.name}{' '}
               <span className="text-sm text-gray-600">
@@ -165,16 +164,32 @@ export default function Admin() {
             {openHistory[user.id] && history[user.id] && (
               <div className="mt-4 bg-white border border-gray-200 p-4 rounded">
                 <p className="font-semibold mb-2">Histórico de Alterações:</p>
-                <ul className="list-disc pl-5 text-sm space-y-1">
-                  {history[user.id].map(h => (
-                    <li key={h.id}>
-                      <span className="text-gray-600">
-                        [{new Date(h.timestamp).toLocaleString()}]
-                      </span>{' '}
-                      {h.action} <strong>{h.preference?.name || 'Preferência removida'}</strong>
-                    </li>
-                  ))}
-                </ul>
+                {history[user.id].length === 0 ? (
+                  <p className="text-sm text-gray-500">Nenhuma alteração registrada ainda.</p>
+                ) : (
+                  <ul className="list-disc pl-5 text-sm space-y-1">
+                    {history[user.id].map(h => (
+                      <li key={h.id}>
+                        <span className="text-gray-600">
+                          [{new Date(h.timestamp).toLocaleString()}]
+                        </span>{' '}
+                        {h.action === 'opt-in' ? 'Opt-in em' : 'Opt-out de'}{' '}
+                        {h.preference ? (
+                          <em className="text-blue-600 font-medium">{h.preference.name}</em>
+                        ) : h.preferenceName ? (
+                          <em className="text-red-500 font-medium italic">
+                            {h.preferenceName} (removida)
+                          </em>
+                        ) : (
+                          <em className="text-red-500 font-medium italic">[Preferência removida]</em>
+                        )}
+                        {h.preference?.description && (
+                          <p className="text-xs text-gray-500 pl-4">{h.preference.description}</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
           </div>

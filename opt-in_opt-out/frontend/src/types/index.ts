@@ -21,6 +21,7 @@ export interface HistoryEntry {
     name: string;
     description?: string;
   };
+  preferenceName: string,
   action: 'opt-in' | 'opt-out';
   timestamp: string;
 }

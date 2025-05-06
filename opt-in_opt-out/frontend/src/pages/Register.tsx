@@ -5,7 +5,6 @@ import type { Preference } from '../types';
 
 export default function Register() {
   const [name, setName] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [selectedPrefs, setSelectedPrefs] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
@@ -24,55 +23,65 @@ export default function Register() {
 
     const res = await api.post('/users', {
       name,
-      isAdmin,
+      isAdmin: false,
       preferences: selectedPrefs,
     });
 
     const user = res.data;
     localStorage.setItem('user', JSON.stringify(user));
-    navigate(user.isAdmin ? '/admin' : '/user');
+    navigate('/dashboard');
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <h1 className="text-2xl font-bold">Cadastro de Usuário</h1>
-      <input
-        className="border p-2 w-64"
-        type="text"
-        placeholder="Nome"
-        value={name}
-        onChange={e => setName(e.target.value)}
-      />
-      <div className="w-64">
-        <p className="font-medium">Preferências:</p>
-        {preferences.map(pref => (
-          <label key={pref.id} className="block text-sm flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={selectedPrefs[pref.name] || false}
-              onChange={e =>
-                setSelectedPrefs(prev => ({
-                  ...prev,
-                  [pref.name]: e.target.checked,
-                }))
-              }
-            />{' '}
-            <span>{pref.name}</span>
-            <span className="ml-2 text-xs text-gray-600">({pref.description})</span>
-          </label>
-        ))}
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center mb-6">Cadastro de Usuário</h1>
 
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-        onClick={handleRegister}
-      >
-        Criar Conta
-      </button>
-      <p className="mt-2">
-        Já tem uma conta?{' '}
-        <a href="/" className="text-blue-600">Faça login</a>
-      </p>
+        <input
+          type="text"
+          placeholder="Nome"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full border border-gray-300 rounded px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <div className="mb-4">
+          <p className="font-medium mb-2">Preferências:</p>
+          {preferences.map(pref => (
+            <label key={pref.id} className="flex items-start gap-2 mb-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={selectedPrefs[pref.name] || false}
+                onChange={e =>
+                  setSelectedPrefs(prev => ({
+                    ...prev,
+                    [pref.name]: e.target.checked,
+                  }))
+                }
+              />
+              <div>
+                <span className="font-medium">{pref.name}</span>
+                <p className="text-sm text-gray-600">{pref.description}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        <button
+          onClick={handleRegister}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+        >
+          Criar Conta
+        </button>
+
+        <p className="text-center text-sm text-gray-600 mt-4">
+          Já tem uma conta?{' '}
+          <a href="/" className="text-blue-600 hover:underline">
+            Faça login
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

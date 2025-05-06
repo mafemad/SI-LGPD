@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { PreferenceMap, User } from '../types/index';
+import type { PreferenceMap, User, Preference } from '../types/index';
 import api from '../api/api';
 import PreferenceItem from '../components/PreferenceItem';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [preferences, setPreferences] = useState<PreferenceMap>({});
+  const [allPreferences, setAllPreferences] = useState<Preference[]>([]); // Para armazenar as preferências completas (com nome e descrição)
   const [hasChanges, setHasChanges] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -25,6 +26,7 @@ const Dashboard = () => {
     if (parsed.id) {
       fetchNotifications(parsed.id);
     }
+    fetchPreferences(); // Carregar as preferências completas (nome e descrição)
   }, []);
 
   const fetchNotifications = async (userId: string) => {
@@ -35,6 +37,16 @@ const Dashboard = () => {
       setShowModal(hasUnread);
     } catch (error) {
       console.error('Erro ao buscar notificações', error);
+    }
+  };
+
+  // Função para buscar todas as preferências com nome e descrição
+  const fetchPreferences = async () => {
+    try {
+      const res = await api.get('/preferences');
+      setAllPreferences(res.data); // Armazenar preferências completas
+    } catch (error) {
+      console.error('Erro ao buscar preferências', error);
     }
   };
 
@@ -80,95 +92,86 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '1rem' }}>
-      <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>
-        Bem-vindo, {user?.name}
-      </h2>
+    <div className="max-w-xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-2">Bem-vindo, {user?.name}</h2>
+      <p className="text-gray-600 mb-6">Gerencie abaixo suas preferências de comunicação.</p>
 
-      {Object.entries(preferences).map(([name, optedIn]) => (
-        <PreferenceItem
-          key={name}
-          name={name}
-          optedIn={optedIn}
-          onChange={(value) => handleChange(name, value)}
-        />
-      ))}
-
-      <div style={{ marginTop: '1rem' }}>
-        <button
-          onClick={handleSave}
-          disabled={!hasChanges}
-          style={{
-            backgroundColor: hasChanges ? '#4caf50' : '#ccc',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            border: 'none',
-            marginRight: '1rem',
-            cursor: hasChanges ? 'pointer' : 'not-allowed',
-          }}
-        >
-          Salvar Alterações
-        </button>
-        <button onClick={() => navigate('/history')}>Ver Histórico</button>
-        {user?.isAdmin && (
-          <button onClick={() => navigate('/admin')} style={{ marginLeft: '1rem' }}>
-            Ir para Admin
-          </button>
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
+        {allPreferences.map((pref) => (
+          <div key={pref.id} className="mb-4">
+            <PreferenceItem
+              name={pref.name}
+              optedIn={preferences[pref.name] || false}
+              onChange={(value) => handleChange(pref.name, value)}
+            />
+            {/* Exibe a descrição da preferência */}
+            <p className="text-sm text-gray-600">{pref.description}</p>
+          </div>
+        ))}
+        {hasChanges && (
+          <p className="text-red-600 mt-4">Você fez alterações. Não esqueça de salvar!</p>
         )}
-      </div>
-
-      {hasChanges && (
-        <div style={{ color: 'red', marginTop: '1rem' }}>
-          Você fez alterações. Não esqueça de salvar!
+        <div className="mt-6 flex flex-wrap gap-4">
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className={`px-4 py-2 rounded text-white transition ${
+              hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+            }`}
+          >
+            Salvar Alterações
+          </button>
+          <button
+            onClick={() => navigate('/history')}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            Ver Histórico
+          </button>
         </div>
-      )}
+      </section>
 
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={handleLogout} style={{ backgroundColor: '#f44336', color: 'white', padding: '0.5rem 1rem', border: 'none', cursor: 'pointer' }}>
+      <div className="mt-10">
+        <h3 className="text-lg font-semibold mb-2">Sessão</h3>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+        >
           Logout
         </button>
       </div>
 
       {/* Modal de notificações */}
       {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            width: '90%',
-            maxWidth: '500px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-          }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Notificações</h3>
-            {notifications.filter(n => !n.read).map(n => (
-              <div key={n.id} style={{ marginBottom: '0.75rem' }}>
-                <p style={{ margin: 0 }}>{n.message}</p>
-                <button
-                  onClick={() => handleMarkAsRead(n.id)}
-                  style={{
-                    color: 'blue',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    marginTop: '0.25rem'
-                  }}
-                >
-                  Marcar como lida
-                </button>
-              </div>
-            ))}
-            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-              <button onClick={() => setShowModal(false)}>Fechar</button>
-              <button onClick={markAllAsRead} style={{ fontWeight: 'bold' }}>
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg w-[90%] max-w-lg shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Notificações</h3>
+            {notifications.filter(n => !n.read).length > 0 ? (
+              notifications.filter(n => !n.read).map(n => (
+                <div key={n.id} className="mb-3">
+                  <p>{n.message}</p>
+                  <button
+                    onClick={() => handleMarkAsRead(n.id)}
+                    className="text-blue-600 underline text-sm"
+                  >
+                    Marcar como lida
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">Nenhuma nova notificação.</p>
+            )}
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-700 underline"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={markAllAsRead}
+                className="font-semibold text-blue-600 underline"
+              >
                 Marcar todas como lidas
               </button>
             </div>

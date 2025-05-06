@@ -35,30 +35,33 @@ export class PreferenceService {
   async updatePreferences(userId: string, updates: { [prefId: string]: boolean }) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Usuário não encontrado');
-
+  
     const userPrefs = await this.userPrefRepo.find({
       where: { user: { id: userId } },
       relations: ['preference'],
     });
-
+  
     const historyEntries: Partial<History>[] = [];
-
+  
     for (const userPref of userPrefs) {
       const newValue = updates[userPref.preference.name];
       if (newValue !== undefined && newValue !== userPref.optedIn) {
         historyEntries.push({
           userId,
           preference: userPref.preference,
+          preferenceName: userPref.preference.name,
           action: newValue ? 'opt-in' : 'opt-out',
         });
         userPref.optedIn = newValue;
       }
     }
-
+  
     await this.userPrefRepo.save(userPrefs);
     await this.historyRepo.save(historyEntries);
+  
     return { message: 'Preferências atualizadas com sucesso.' };
   }
+  
 
   async createPreference(name: string, description?: string) {
     const exists = await this.prefRepo.findOne({ where: { name } });
