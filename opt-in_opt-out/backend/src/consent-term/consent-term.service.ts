@@ -1,0 +1,93 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ConsentTerm } from './entities/consentTerm.entity';
+import { Preference } from 'src/preferences/entities/preference.entity';
+import { UserConsent } from './entities/userConsente.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { User } from 'src/user/entities/user.entity';
+
+@Injectable()
+export class ConsentTermService {
+  constructor(
+    @InjectRepository(ConsentTerm)
+    private termRepo: Repository<ConsentTerm>,
+
+    @InjectRepository(Preference)
+    private prefRepo: Repository<Preference>,
+
+    @InjectRepository(UserConsent)
+    private userConsentRepo: Repository<UserConsent>,
+
+    private readonly notificationService: NotificationService,
+  ) {}
+
+  async create(
+    content: string,
+    preferenceIds: string[],
+    newPreferences: { name: string; description?: string }[],
+  ) {
+    const last = await this.termRepo.findOne({ order: { createdAt: 'DESC' } });
+  
+    if (last) {
+      await this.termRepo.update({ id: last.id }, { active: false });
+    }
+  
+    const existingPrefs = await this.prefRepo.findByIds(preferenceIds);
+  
+    const createdPrefs: Preference[] = [];
+  
+    for (const newPref of newPreferences) {
+      const exists = await this.prefRepo.findOne({ where: { name: newPref.name } });
+      if (!exists) {
+        const pref = this.prefRepo.create(newPref);
+        const saved = await this.prefRepo.save(pref);
+        createdPrefs.push(saved);
+      } else {
+        createdPrefs.push(exists);
+      }
+    }
+  
+    const preferences = [...existingPrefs, ...createdPrefs];
+  
+    const newTerm = this.termRepo.create({
+      content,
+      version: (last?.version || 0) + 1,
+      active: true,
+      preferences,
+    });
+  
+    const savedTerm = await this.termRepo.save(newTerm);
+  
+    const users = await this.userConsentRepo.manager.find(User);
+    for (const user of users) {
+      await this.notificationService.create(user, `Novo termo de consentimento disponível. Versão ${savedTerm.version}`);
+    }
+  
+    return savedTerm;
+  }
+  async getActive() {
+    const term = await this.termRepo.findOne({ where: { active: true } });
+    if (!term) throw new NotFoundException('Nenhum termo ativo encontrado');
+    return term;
+  }
+
+  async getAcceptedTerm(userId: string): Promise<ConsentTerm | null> {
+    const accepted = await this.userConsentRepo.findOne({
+      where: { user: { id: userId } },
+      order: { acceptedAt: 'DESC' },
+      relations: ['term'],
+    });
+
+    return accepted?.consentTerm || null;
+  }
+
+  async getTerms(active?: boolean) {
+    const where = active !== undefined ? { active } : {};
+    return this.termRepo.find({
+      where,
+      order: { createdAt: 'DESC' },
+    });
+  }
+  
+}

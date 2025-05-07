@@ -10,11 +10,16 @@ export class HistoryService {
     private historyRepo: Repository<History>,
   ) {}
 
-  getByUser(userId: string) {
-    return this.historyRepo.find({
+  async getByUser(userId: string) {
+    const entries = await this.historyRepo.find({
       where: { userId },
-      relations: ['preference'],
+      relations: ['preference', 'consentTerm'],
       order: { timestamp: 'DESC' },
     });
+  
+    return entries.map(e => ({
+      ...e,
+      termVersion: e.consentTerm?.version,
+    }));
   }
 }
