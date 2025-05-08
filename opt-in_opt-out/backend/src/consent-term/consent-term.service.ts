@@ -27,11 +27,13 @@ export class ConsentTermService {
     preferenceIds: string[],
     newPreferences: { name: string; description?: string }[],
   ) {
-    const last = await this.termRepo.findOne({ order: { createdAt: 'DESC' } });
+    // Desativa todos os termos ativos antes de criar um novo
+    await this.termRepo.update({ active: true }, { active: false });
   
-    if (last) {
-      await this.termRepo.update({ id: last.id }, { active: false });
-    }
+    const [last] = await this.termRepo.find({
+      order: { createdAt: 'DESC' },
+      take: 1,
+    });
   
     const existingPrefs = await this.prefRepo.findByIds(preferenceIds);
   
@@ -61,13 +63,21 @@ export class ConsentTermService {
   
     const users = await this.userConsentRepo.manager.find(User);
     for (const user of users) {
-      await this.notificationService.create(user, `Novo termo de consentimento disponível. Versão ${savedTerm.version}`);
+      await this.notificationService.create(
+        user,
+        `Novo termo de consentimento disponível. Versão ${savedTerm.version}`,
+      );
     }
   
     return savedTerm;
   }
+  
+
   async getActive() {
-    const term = await this.termRepo.findOne({ where: { active: true } });
+    const term = await this.termRepo.findOne({
+      where: { active: true },
+      relations: ['preferences'],
+    });
     if (!term) throw new NotFoundException('Nenhum termo ativo encontrado');
     return term;
   }
@@ -87,6 +97,7 @@ export class ConsentTermService {
     return this.termRepo.find({
       where,
       order: { createdAt: 'DESC' },
+      relations: ['preferences'],
     });
   }
   
