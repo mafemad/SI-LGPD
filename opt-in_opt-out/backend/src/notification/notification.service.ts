@@ -10,14 +10,14 @@ export class NotificationService {
     private notificationRepo: Repository<Notification>,
   ) {}
 
-  async create(user: { id: string }, message: string) {
+  async create(user: { id: string }, message: string, type: string = 'info') {
     const notification = this.notificationRepo.create({
       user,
       message,
+      type,
     });
     await this.notificationRepo.save(notification);
   }
-  
 
   getByUser(userId: string) {
     return this.notificationRepo.find({

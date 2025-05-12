@@ -21,4 +21,12 @@ export class ConsentTermController {
     const isActive = active !== undefined ? active === 'true' : undefined;
     return this.service.getTerms(isActive);
   }
+
+  @Post('accept')
+  acceptTerm(
+    @Body() body: { userId: string; termId: string },
+  ) {
+    return this.service.acceptTerm(body.userId, body.termId);
+  }
+
 }

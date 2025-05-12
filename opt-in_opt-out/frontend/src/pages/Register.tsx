@@ -24,22 +24,32 @@ export default function Register() {
   const handleRegister = async () => {
     if (!name.trim()) return alert('Digite um nome');
     if (!accepted) return alert('Você precisa aceitar os termos para continuar');
-
+    if (!term) return alert('Termo ativo não encontrado');
+  
     const preferencesPayload = Object.fromEntries(
       Object.entries(selectedPrefs).filter(([_, checked]) => checked)
     );
-
+  
+    // Criação do usuário
     const res = await api.post('/users', {
       name,
       isAdmin: false,
-      termId: term?.id,
+      termId: term.id,
       preferences: preferencesPayload,
     });
-
+  
     const user = res.data;
+  
+    // Registro do aceite do termo
+    await api.post('/terms/accept', {
+      userId: user.id,
+      termId: term.id,
+    });
+  
     localStorage.setItem('user', JSON.stringify(user));
     navigate('/dashboard');
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

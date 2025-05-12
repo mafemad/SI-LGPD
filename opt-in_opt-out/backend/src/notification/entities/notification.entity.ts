@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+} from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
 @Entity()
@@ -14,6 +20,9 @@ export class Notification {
 
   @Column({ default: false })
   read: boolean;
+
+  @Column({ default: 'info' }) // novo campo
+  type: string;
 
   @CreateDateColumn()
   createdAt: Date;

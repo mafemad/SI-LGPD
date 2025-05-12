@@ -32,6 +32,7 @@ export interface ConsentTerm {
   content: string;
   active: boolean;
   createdAt: string;
+  preferences: Preference[];
 }
 
 export interface HistoryEntry {

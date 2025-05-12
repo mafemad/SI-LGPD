@@ -66,6 +66,7 @@ export class ConsentTermService {
       await this.notificationService.create(
         user,
         `Novo termo de consentimento disponível. Versão ${savedTerm.version}`,
+        'new_term'
       );
     }
   
@@ -86,7 +87,7 @@ export class ConsentTermService {
     const accepted = await this.userConsentRepo.findOne({
       where: { user: { id: userId } },
       order: { acceptedAt: 'DESC' },
-      relations: ['term'],
+      relations: ['consentTerm'],
     });
 
     return accepted?.consentTerm || null;
@@ -99,6 +100,35 @@ export class ConsentTermService {
       order: { createdAt: 'DESC' },
       relations: ['preferences'],
     });
+  }
+  
+  async acceptTerm(userId: string, termId: string) {
+    const user = await this.userConsentRepo.manager.findOne(User, {
+      where: { id: userId },
+    });
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+  
+    const term = await this.termRepo.findOne({
+      where: { id: termId, active: true },
+    });
+    if (!term) throw new NotFoundException('Termo não encontrado ou inativo');
+  
+    const existing = await this.userConsentRepo.findOne({
+      where: { user: { id: userId }, consentTerm: { id: termId } },
+    });
+  
+    if (existing) {
+      return { message: 'Termo já aceito anteriormente.' };
+    }
+  
+    const consent = this.userConsentRepo.create({
+      user,
+      consentTerm: term,
+    });
+  
+    await this.userConsentRepo.save(consent);
+  
+    return { message: 'Termo aceito com sucesso.' };
   }
   
 }

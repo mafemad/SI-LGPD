@@ -13,6 +13,7 @@ export class NotificationController {
 
   @Post('read/:id')
   markAsRead(@Param('id') id: string) {
+    console.log('Marcando como lido o ID da notificação:', id); 
     return this.notificationService.markAsRead(id);
   }
 }
