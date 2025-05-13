@@ -7,6 +7,7 @@ interface Props {
 }
 
 const PreferenceItem: React.FC<Props> = ({ name, optedIn, onChange }) => {
+  console.log(name,optedIn,onChange)
   return (
     <div className="preference-item">
       <span>{name}</span>

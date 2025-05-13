@@ -6,6 +6,8 @@ import { Preference } from 'src/preferences/entities/preference.entity';
 import { UserConsent } from './entities/userConsente.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { User } from 'src/user/entities/user.entity';
+import { UserPreference } from 'src/preferences/entities/userPreference.entity';
+import { History } from 'src/history/entities/history.entity';
 
 @Injectable()
 export class ConsentTermService {
@@ -16,8 +18,14 @@ export class ConsentTermService {
     @InjectRepository(Preference)
     private prefRepo: Repository<Preference>,
 
+    @InjectRepository(Preference)
+    private userPrefRepo: Repository<UserPreference>,
+
     @InjectRepository(UserConsent)
     private userConsentRepo: Repository<UserConsent>,
+
+    @InjectRepository(History)
+    private historyRepo: Repository<History>,
 
     private readonly notificationService: NotificationService,
   ) {}
@@ -102,33 +110,69 @@ export class ConsentTermService {
     });
   }
   
-  async acceptTerm(userId: string, termId: string) {
-    const user = await this.userConsentRepo.manager.findOne(User, {
-      where: { id: userId },
-    });
-    if (!user) throw new NotFoundException('Usuário não encontrado');
-  
-    const term = await this.termRepo.findOne({
-      where: { id: termId, active: true },
-    });
-    if (!term) throw new NotFoundException('Termo não encontrado ou inativo');
-  
-    const existing = await this.userConsentRepo.findOne({
-      where: { user: { id: userId }, consentTerm: { id: termId } },
-    });
-  
-    if (existing) {
-      return { message: 'Termo já aceito anteriormente.' };
-    }
-  
-    const consent = this.userConsentRepo.create({
-      user,
-      consentTerm: term,
-    });
-  
-    await this.userConsentRepo.save(consent);
-  
-    return { message: 'Termo aceito com sucesso.' };
+async acceptTerm(
+  userId: string,
+  termId: string,
+  preferencesMap: { [prefName: string]: boolean },
+) {
+  const user = await this.userConsentRepo.manager.findOne(User, {
+    where: { id: userId },
+  });
+  if (!user) throw new NotFoundException('Usuário não encontrado');
+
+  const term = await this.termRepo.findOne({
+    where: { id: termId, active: true },
+    relations: ['preferences'],
+  });
+  if (!term) throw new NotFoundException('Termo não encontrado ou inativo');
+
+  const existing = await this.userConsentRepo.findOne({
+    where: { user: { id: userId }, consentTerm: { id: termId } },
+  });
+
+  if (existing) {
+    return { message: 'Termo já aceito anteriormente.' };
   }
+
+  const consent = this.userConsentRepo.create({
+    user,
+    consentTerm: term,
+  });
+  await this.userConsentRepo.save(consent);
+
+  const userPrefsRepo = this.userConsentRepo.manager.getRepository(UserPreference);
+
+  const userPrefsToSave: UserPreference[] = [];
+  const historyEntries: History[] = [];
+
+  for (const pref of term.preferences) {
+    const optedIn = preferencesMap[pref.name] ?? false;
+
+    userPrefsToSave.push(
+      userPrefsRepo.create({
+        user,
+        preference: pref,
+        optedIn,
+      }),
+    );
+
+    historyEntries.push(
+      this.historyRepo.create({
+        userId: user.id,
+        preference: pref,
+        preferenceName: pref.name,
+        action: optedIn ? 'opt-in' : 'opt-out',
+        consentTerm: term,
+      }),
+    );
+  }
+
+  await userPrefsRepo.save(userPrefsToSave);
+  await this.historyRepo.save(historyEntries);
+
+  return { message: 'Termo aceito e preferências registradas com sucesso.' };
+}
+
+
   
 }

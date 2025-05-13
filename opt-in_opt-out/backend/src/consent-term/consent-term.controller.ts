@@ -24,9 +24,9 @@ export class ConsentTermController {
 
   @Post('accept')
   acceptTerm(
-    @Body() body: { userId: string; termId: string },
+    @Body() body: { userId: string; termId: string; preferencesMap: { [prefName: string]: boolean } },
   ) {
-    return this.service.acceptTerm(body.userId, body.termId);
+    return this.service.acceptTerm(body.userId, body.termId, body.preferencesMap);
   }
 
 }

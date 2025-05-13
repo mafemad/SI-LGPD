@@ -25,30 +25,38 @@ export default function Register() {
     if (!name.trim()) return alert('Digite um nome');
     if (!accepted) return alert('Você precisa aceitar os termos para continuar');
     if (!term) return alert('Termo ativo não encontrado');
-  
-    const preferencesPayload = Object.fromEntries(
-      Object.entries(selectedPrefs).filter(([_, checked]) => checked)
-    );
-  
-    // Criação do usuário
-    const res = await api.post('/users', {
-      name,
-      isAdmin: false,
-      termId: term.id,
-      preferences: preferencesPayload,
+
+    // Mapeia as preferências usando o termo
+    const preferencesMap: Record<string, boolean> = {};
+    term.preferences?.forEach((pref: Preference) => {
+      preferencesMap[pref.name] = selectedPrefs[pref.name] ?? false;
     });
-  
-    const user = res.data;
-  
-    // Registro do aceite do termo
-    await api.post('/terms/accept', {
-      userId: user.id,
-      termId: term.id,
-    });
-  
-    localStorage.setItem('user', JSON.stringify(user));
-    navigate('/dashboard');
+
+    try {
+      // Criação do usuário
+      const res = await api.post('/users', {
+        name,
+        isAdmin: false,
+        termId: term.id,
+        preferences: preferencesMap,
+      });
+
+      const user = res.data;
+
+      // Registro do aceite do termo com as preferências
+      await api.post('/terms/accept', {
+        userId: user.id,
+        termId: term.id,
+        preferencesMap,
+      });
+
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/dashboard');
+    } catch (error) {
+      alert('Erro ao registrar ou aceitar termo.');
+    }
   };
+
   
 
   return (

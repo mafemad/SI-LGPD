@@ -23,6 +23,8 @@ const Dashboard = () => {
 
     const parsed = JSON.parse(userData);
     setUser(parsed);
+    console.log(parsed.preferences)
+    setPreferences(parsed.preferences || {});
 
     fetchNotifications(parsed.id);
     fetchActiveTerm(parsed.id);
@@ -54,7 +56,6 @@ const Dashboard = () => {
 
       if (currentUser.acceptedTermId !== latestTerm.id) {
         setTerm(latestTerm);
-        setPreferences({});
       } else {
         setPreferences(currentUser.preferences || {});
       }
@@ -76,13 +77,25 @@ const Dashboard = () => {
   const handleAcceptTerm = async () => {
     if (!user || !term) return;
 
+    // Tipar corretamente preferencesMap
+     const preferencesMap: PreferenceMap = {};
+
+    // Preencher preferencesMap com base nas preferências do usuário
+    allPreferences.forEach((pref: Preference) => {
+      preferencesMap[pref.name] = preferences[pref.name] ?? false;
+    });
+
     try {
+      // Enviar a aceitação do termo e as preferências ao backend
       await api.post('/terms/accept', {
         userId: user.id,
         termId: term.id,
+        preferencesMap,
       });
 
+      // Atualizar preferências no backend (se necessário)
       await api.put(`/preferences/${user.id}`, preferences);
+
       await markTermNotificationAsRead();
 
       alert('Termo aceito e preferências salvas com sucesso!');
@@ -94,6 +107,27 @@ const Dashboard = () => {
       setUser(updatedUser);
     } catch (error) {
       alert('Erro ao aceitar termo ou salvar preferências.');
+    }
+  };
+
+
+
+  const handleSavePreferences = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Usuário:', user);
+      console.log('Preferências:', preferences);
+      await api.put(`/preferences/${user.id}`, preferences);
+      alert('Preferências salvas com sucesso!');
+      setHasChanges(false);
+
+      const updatedUser = { ...user, preferences };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (error) {
+      alert('Erro ao salvar preferências.');
+      console.error(error);
     }
   };
 
@@ -126,26 +160,29 @@ const Dashboard = () => {
       <h2 className="text-2xl font-bold mb-2">Bem-vindo, {user?.name}</h2>
       <p className="text-gray-600 mb-6">Gerencie abaixo suas preferências de comunicação.</p>
 
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
-        {allPreferences.map((pref) => (
-          <div key={pref.id} className="mb-4">
-            <PreferenceItem
-              name={pref.name}
-              optedIn={preferences[pref.name] || false}
-              onChange={(value) => handleChange(pref.name, value)}
-            />
-            <p className="text-sm text-gray-600">{pref.description}</p>
-          </div>
-        ))}
-        {hasChanges && (
-          <p className="text-red-600 mt-4">Você fez alterações. Não esqueça de salvar!</p>
-        )}
-      </section>
+    <section className="mb-8">
+      <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
+      {allPreferences.map((pref) => (
+        <div key={pref.id} className="mb-4">
+          <PreferenceItem
+            name={pref.name}
+            optedIn={preferences[pref.name] ?? false}
+            onChange={(value) => handleChange(pref.name, value)}
+          />
+          <p className="text-sm text-gray-600">{pref.description}</p>
+        </div>
+      ))}
+      {hasChanges && (
+        <p className="text-red-600 mt-4">
+          Você fez alterações. Não esqueça de salvar!
+        </p>
+      )}
+    </section>
+
 
       <div className="mt-6 flex flex-wrap gap-4">
         <button
-          onClick={handleAcceptTerm}
+          onClick={handleSavePreferences}
           disabled={!hasChanges}
           className={`px-4 py-2 rounded text-white transition ${
             hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
@@ -172,7 +209,7 @@ const Dashboard = () => {
       </div>
 
       {showTermModal && term && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-xl shadow-xl max-h-[90vh] overflow-auto">
             <h3 className="text-lg font-bold mb-4">Novo Termo de Consentimento</h3>
             <div className="prose mb-4">
