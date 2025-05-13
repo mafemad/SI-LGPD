@@ -11,7 +11,7 @@ export const UserDashboard: React.FC = () => {
     const data = localStorage.getItem('user');
     if (data) {
       setUser(JSON.parse(data));
-    }else {
+    } else {
       navigate('/');
     }
   }, []);
@@ -19,6 +19,10 @@ export const UserDashboard: React.FC = () => {
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  const handleEdit = () => {
+    navigate("/editar-usuario");
   };
 
   if (!user) return <div>Carregando...</div>;
@@ -32,6 +36,7 @@ export const UserDashboard: React.FC = () => {
       <p><strong>Idade:</strong> {user.age}</p>
 
       <button onClick={() => setShowModal(true)}>Exportar Dados</button>
+      <button onClick={handleEdit} style={{ marginLeft: 10 }}>Editar Dados</button>
       <button onClick={handleLogout} style={{ marginLeft: 10 }}>Logout</button>
 
       {showModal && (

@@ -25,9 +25,13 @@ export class UserService {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  update(id: number, data: Partial<User>) {
-    return this.userRepo.update(id, data);
+  async update(id: number, data: Partial<User>) {
+    await this.userRepo.update(id, data);
+    return this.findById(id); // <-- Retorna o usuário atualizado
   }
+
+
+
 
   remove(id: number) {
     return this.userRepo.delete(id);
