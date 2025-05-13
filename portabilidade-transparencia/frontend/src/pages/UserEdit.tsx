@@ -66,26 +66,102 @@ export const UserEdit: React.FC = () => {
   if (!user) return <div>Carregando...</div>;
 
   return (
-    <div className="edit-user">
-      <h2>Editar Informações do Usuário</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Nome:</label>
-        <input type="text" name="name" value={formData.name} onChange={handleChange} />
+  <div style={{
+    minHeight: '100vh',
+    backgroundColor: '#f4f6f8',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    fontFamily: 'Arial, sans-serif'
+  }}>
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '40px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      width: '100%',
+      maxWidth: '500px'
+    }}>
+      <h2 style={{ marginBottom: '60px', textAlign: 'center', color: '#333' }}>
+        Editar Informações do Usuário
+      </h2>
 
-        <label>CPF:</label>
-        <input type="text" name="cpf" value={formData.cpf} onChange={handleChange} />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div>
+          <label>Nome:</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            
+          />
+        </div>
 
-        <label>Email:</label>
-        <input type="email" name="email" value={formData.email} onChange={handleChange} />
+        <div>
+          <label>CPF:</label>
+          <input
+            type="text"
+            name="cpf"
+            value={formData.cpf}
+            onChange={handleChange}
+           
+          />
+        </div>
 
-        <label>Endereço:</label>
-        <input type="text" name="address" value={formData.address} onChange={handleChange} />
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+           
+          />
+        </div>
 
-        <label>Idade:</label>
-        <input type="number" name="age" value={formData.age} onChange={handleChange} />
+        <div>
+          <label>Endereço:</label>
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+         
+          />
+        </div>
 
-        <button type="submit">Salvar Alterações</button>
+        <div>
+          <label>Idade:</label>
+          <input
+            type="number"
+            name="age"
+            value={formData.age}
+            onChange={handleChange}
+            
+          />
+        </div>
+
+        <button
+          type="submit"
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#3f51b5',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#303f9f'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3f51b5'}
+        >
+          Salvar Alterações
+        </button>
       </form>
     </div>
-  );
+  </div>
+);
+
 };

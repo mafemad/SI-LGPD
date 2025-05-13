@@ -35,18 +35,75 @@ const LoginPage = () => {
     }
   };
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h2>Login</h2>
+ return (
+  <div style={{
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f4f6f8',
+    fontFamily: 'Arial, sans-serif'
+  }}>
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '40px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      width: '100%',
+      maxWidth: '400px',
+      textAlign: 'center'
+    }}>
+      <h2 style={{ marginBottom: '20px', color: '#333', width: '100%' }}>Login</h2>
+      
       <input
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        style={{
+          width: '95%',
+          padding: '10px',
+          marginBottom: '15px',
+          border: '1px solid #ccc',
+          borderRadius: '4px'
+        }}
       />
-      <button onClick={handleLogin}>Entrar</button>
-      <p>Não tem conta? <button onClick={() => navigate("/register")}>Criar Conta</button></p>
+
+      <button
+        onClick={handleLogin}
+        style={{
+          width: '100%',
+          padding: '10px',
+          backgroundColor: '#007bff',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginBottom: '15px'
+        }}
+      >
+        Entrar
+      </button>
+
+      <p style={{ color: '#555' }}>
+        Não tem conta?
+        <button
+          onClick={() => navigate("/register")}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#007bff',
+            marginLeft: '5px',
+            cursor: 'pointer',
+            textDecoration: 'underline'
+          }}
+        >
+          Criar Conta
+        </button>
+      </p>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default LoginPage;
