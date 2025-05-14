@@ -300,7 +300,7 @@ export default function Admin() {
                           <em className="text-red-500 font-medium italic">[Preferência removida]</em>
                         )}
                         {h.consentTerm?.version !== undefined && (
-                          <span className="text-xs text-gray-500 ml-2">(Versão {h.consentTerm.version})</span>
+                          <span className="text-xs text-gray-500 ml-2">(termo de consentimento versão {h.consentTerm.version})</span>
                         )}
                         {h.preference?.description && (
                           <p className="text-xs text-gray-500 pl-4">{h.preference.description}</p>

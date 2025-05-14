@@ -43,21 +43,31 @@ const History = () => {
         <p className="text-center text-gray-500">Nenhuma alteração registrada ainda.</p>
       ) : (
         <>
-          <ul className="space-y-4 list-disc list-inside">
-            {paginatedHistory.map((entry) => (
-              <li key={entry.id} className="text-sm text-gray-800">
-                <span className="text-gray-600">
-                  [{new Date(entry.timestamp).toLocaleString()}]
-                </span>{' '}
-                Você realizou <strong>{entry.action}</strong> na preferência{' '}
-                {entry.preference ? (
-                  <em className="text-blue-600 font-medium">{entry.preference.name}</em>
-                ) : entry.preferenceName ? (
-                  <em className="text-red-500 font-medium italic">
-                    {entry.preferenceName} (removida)
-                  </em>
-                ) : (
-                  <em className="text-red-500 font-medium italic">[Preferência removida]</em>
+          <ul className="space-y-4 text-sm">
+            {paginatedHistory.map((h) => (
+              <li key={h.id} className="bg-gray-50 border border-gray-200 p-4 rounded">
+                <div className="mb-1 text-gray-600">
+                  [{new Date(h.timestamp).toLocaleString()}]
+                </div>
+                <div>
+                  Você realizou <strong>{h.action === 'opt-in' ? 'opt-in' : 'opt-out'}</strong> em{' '}
+                  {h.preference ? (
+                    <em className="text-blue-600 font-medium">{h.preference.name}</em>
+                  ) : h.preferenceName ? (
+                    <em className="text-red-500 font-medium italic">
+                      {h.preferenceName} (removida)
+                    </em>
+                  ) : (
+                    <em className="text-red-500 font-medium italic">[Preferência removida]</em>
+                  )}
+                  {h.consentTerm?.version !== undefined && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    (termo de consentimento versão {h.consentTerm.version})
+                  </span>
+                  )}
+                </div>
+                {h.preference?.description && (
+                  <p className="text-xs text-gray-500 mt-1 pl-4">{h.preference.description}</p>
                 )}
               </li>
             ))}
