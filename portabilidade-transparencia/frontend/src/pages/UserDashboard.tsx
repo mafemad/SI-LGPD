@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ExportModal } from '../components/ExportModal';
 import { useNavigate } from 'react-router-dom';
 
 export const UserDashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState<any>(null); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,7 +57,6 @@ export const UserDashboard: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
         {[
-          { text: 'Exportar Dados', action: () => setShowModal(true) },
           { text: 'Editar Dados', action: handleEdit },
           { text: 'Logout', action: handleLogout }
         ].map(({ text, action }, index) => (
@@ -82,10 +79,6 @@ export const UserDashboard: React.FC = () => {
           </button>
         ))}
       </div>
-
-      {showModal && (
-        <ExportModal userId={user.id} onClose={() => setShowModal(false)} />
-      )}
     </div>
   </div>
 );

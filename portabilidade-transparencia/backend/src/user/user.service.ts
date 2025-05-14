@@ -1,4 +1,3 @@
-// src/user/user.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,7 +26,7 @@ export class UserService {
 
   async update(id: number, data: Partial<User>) {
     await this.userRepo.update(id, data);
-    return this.findById(id); // <-- Retorna o usuário atualizado
+    return this.findById(id); 
   }
 
 

@@ -55,7 +55,7 @@ export const UserEdit: React.FC = () => {
       const updatedUser = { ...user, ...formData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       alert('Usuário atualizado com sucesso!');
-      navigate('/user'); // ou para a rota desejada
+      navigate('/user');
 
     } catch (error) {
       console.error('Erro ao atualizar:', error);
