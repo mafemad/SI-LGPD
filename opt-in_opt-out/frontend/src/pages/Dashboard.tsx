@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showTermModal, setShowTermModal] = useState(false);
+  const [showFullTerm, setShowFullTerm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +24,6 @@ const Dashboard = () => {
 
     const parsed = JSON.parse(userData);
     setUser(parsed);
-    console.log(parsed.preferences)
     setPreferences(parsed.preferences || {});
 
     fetchNotifications(parsed.id);
@@ -34,7 +34,6 @@ const Dashboard = () => {
     try {
       const res = await api.get(`/notifications/${userId}`);
       const newNotifications = res.data;
-      console.log(newNotifications)
       setNotifications(newNotifications);
 
       const hasNewTerm = newNotifications.some((n: any) => n.type === 'new_term' && !n.read);
@@ -77,25 +76,19 @@ const Dashboard = () => {
   const handleAcceptTerm = async () => {
     if (!user || !term) return;
 
-    // Tipar corretamente preferencesMap
-     const preferencesMap: PreferenceMap = {};
-
-    // Preencher preferencesMap com base nas preferências do usuário
+    const preferencesMap: PreferenceMap = {};
     allPreferences.forEach((pref: Preference) => {
       preferencesMap[pref.name] = preferences[pref.name] ?? false;
     });
 
     try {
-      // Enviar a aceitação do termo e as preferências ao backend
       await api.post('/terms/accept', {
         userId: user.id,
         termId: term.id,
         preferencesMap,
       });
 
-      // Atualizar preferências no backend (se necessário)
       await api.put(`/preferences/${user.id}`, preferences);
-
       await markTermNotificationAsRead();
 
       alert('Termo aceito e preferências salvas com sucesso!');
@@ -110,14 +103,10 @@ const Dashboard = () => {
     }
   };
 
-
-
   const handleSavePreferences = async () => {
     if (!user) return;
 
     try {
-      console.log('Usuário:', user);
-      console.log('Preferências:', preferences);
       await api.put(`/preferences/${user.id}`, preferences);
       alert('Preferências salvas com sucesso!');
       setHasChanges(false);
@@ -133,12 +122,9 @@ const Dashboard = () => {
 
   const markTermNotificationAsRead = async () => {
     const termNotif = notifications.find(n => n.type === 'new_term' && !n.read);
-    console.log(termNotif)
     if (termNotif) {
-      console.log('Enviando requisição para marcar como lida:', termNotif.id); // Log aqui
       try {
-        const response = await api.post(`/notifications/read/${termNotif.id}`);
-        console.log('Resposta da requisição para marcar como lida:', response.data); // Log da resposta
+        await api.post(`/notifications/read/${termNotif.id}`);
         setNotifications(prev =>
           prev.map(n => (n.id === termNotif.id ? { ...n, read: true } : n))
         );
@@ -147,8 +133,6 @@ const Dashboard = () => {
       }
     }
   };
-  
-  
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -160,25 +144,24 @@ const Dashboard = () => {
       <h2 className="text-2xl font-bold mb-2">Bem-vindo, {user?.name}</h2>
       <p className="text-gray-600 mb-6">Gerencie abaixo suas preferências de comunicação.</p>
 
-    <section className="mb-8">
-      <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
-      {allPreferences.map((pref) => (
-        <div key={pref.id} className="mb-4">
-          <PreferenceItem
-            name={pref.name}
-            optedIn={preferences[pref.name] ?? false}
-            onChange={(value) => handleChange(pref.name, value)}
-          />
-          <p className="text-sm text-gray-600">{pref.description}</p>
-        </div>
-      ))}
-      {hasChanges && (
-        <p className="text-red-600 mt-4">
-          Você fez alterações. Não esqueça de salvar!
-        </p>
-      )}
-    </section>
-
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
+        {allPreferences.map((pref) => (
+          <div key={pref.id} className="mb-4">
+            <PreferenceItem
+              name={pref.name}
+              optedIn={preferences[pref.name] ?? false}
+              onChange={(value) => handleChange(pref.name, value)}
+            />
+            <p className="text-sm text-gray-600">{pref.description}</p>
+          </div>
+        ))}
+        {hasChanges && (
+          <p className="text-red-600 mt-4">
+            Você fez alterações. Não esqueça de salvar!
+          </p>
+        )}
+      </section>
 
       <div className="mt-6 flex flex-wrap gap-4">
         <button
@@ -212,9 +195,14 @@ const Dashboard = () => {
         <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-xl shadow-xl max-h-[90vh] overflow-auto">
             <h3 className="text-lg font-bold mb-4">Novo Termo de Consentimento</h3>
-            <div className="prose mb-4">
-              <p>{term.content}</p>
-            </div>
+
+            <button
+              onClick={() => setShowFullTerm(true)}
+              className="text-blue-600 underline mb-4"
+            >
+              Ver termo completo
+            </button>
+
             <h4 className="font-semibold mt-4">Escolha suas preferências:</h4>
             {term.preferences.map((pref) => (
               <div key={pref.id} className="mb-2">
@@ -226,12 +214,36 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-600">{pref.description}</p>
               </div>
             ))}
+
             <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={handleAcceptTerm}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
               >
                 Aceitar Termo
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFullTerm && term && (
+        <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg w-[90%] max-w-2xl shadow-xl max-h-[90vh] overflow-auto">
+            <h3 className="text-lg font-bold mb-4">Conteúdo do Termo</h3>
+            <div className="prose mb-4 whitespace-pre-wrap">{term.content}</div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowFullTerm(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+              >
+                Fechar
               </button>
             </div>
           </div>
