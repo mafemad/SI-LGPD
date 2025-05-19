@@ -1,5 +1,16 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  Req,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -10,23 +21,24 @@ export class UserController {
     return this.userService.create(body);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findById(@Param('id') id: number) {
+  findById(@Param('id') id: number, @Req() req) {
+    if (req.user.id !== Number(id)) {
+      throw new ForbiddenException('Você só pode visualizar seus próprios dados.');
+    }
     return this.userService.findById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: number, @Body() body: any) {
+  update(@Param('id') id: number, @Body() body: any, @Req() req) {
+    if (req.user.id !== Number(id)) {
+      throw new ForbiddenException('Você só pode atualizar sua própria conta.');
+    }
     return this.userService.update(id, body);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(id);
-  }
+
+  
 }

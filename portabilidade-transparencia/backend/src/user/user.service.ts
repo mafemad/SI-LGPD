@@ -1,15 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
-  create(data: Partial<User>) {
-    const user = this.userRepo.create(data);
+  async create(data: Partial<User>) {
+    if (!data.password) {
+      throw new BadRequestException('A senha é obrigatória.');
+    }
+
+    if (!this.isPasswordStrong(data.password)) {
+      throw new BadRequestException(
+        'A senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.'
+      );
+    }
+
+    const userExists = await this.userRepo.findOne({ where: { email: data.email } });
+
+    if (userExists) {
+      throw new BadRequestException('Email já está em uso.');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = this.userRepo.create({ ...data, password: hashedPassword });
     return this.userRepo.save(user);
+  }
+
+  private isPasswordStrong(password: string): boolean {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    return regex.test(password);
   }
 
   findAll() {
@@ -25,12 +48,19 @@ export class UserService {
   }
 
   async update(id: number, data: Partial<User>) {
+    if (data.password && !this.isPasswordStrong(data.password)) {
+      throw new BadRequestException(
+        'A nova senha deve ser forte (mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo).'
+      );
+    }
+
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
     await this.userRepo.update(id, data);
     return this.findById(id); 
   }
-
-
-
 
   remove(id: number) {
     return this.userRepo.delete(id);
