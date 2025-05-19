@@ -6,10 +6,14 @@ import { UserService } from 'src/user/user.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly userService: UserService) {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET não definido no .env');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'segredo_supersecreto',
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
 
@@ -19,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       return null;
     }
-    
+
     return {
       id: user.id,
       email: user.email,

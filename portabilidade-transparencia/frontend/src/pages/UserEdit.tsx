@@ -35,33 +35,41 @@ export const UserEdit: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+  e.preventDefault();
+  if (!user) return;
 
-    try {
-        const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+  const token = localStorage.getItem('token'); 
 
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+  if (!token) {
+    alert('Token não encontrado. Faça login novamente.');
+    return;
+  }
 
-      if (!response.ok) {
-        throw new Error('Erro na atualização');
-      }
+  try {
+    const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, 
+      },
+      body: JSON.stringify(formData),
+    });
 
-      const updatedUser = { ...user, ...formData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      alert('Usuário atualizado com sucesso!');
-      navigate('/user');
-
-    } catch (error) {
-      console.error('Erro ao atualizar:', error);
-      alert('Falha ao atualizar usuário.');
+    if (!response.ok) {
+      throw new Error('Erro na atualização');
     }
-  };
+
+    const updatedUser = { ...user, ...formData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    alert('Usuário atualizado com sucesso!');
+    navigate('/user');
+
+  } catch (error) {
+    console.error('Erro ao atualizar:', error);
+    alert('Falha ao atualizar usuário.');
+  }
+};
+
 
   if (!user) return <div>Carregando...</div>;
 

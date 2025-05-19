@@ -6,13 +6,27 @@ import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([User]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'segredo_supersecreto',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+
+        if (!jwtSecret) {
+          throw new Error('JWT_SECRET não definido no .env');
+        }
+
+        return {
+          secret: jwtSecret,
+          signOptions: { expiresIn: '1h' },
+        };
+      },
     }),
   ],
   controllers: [AuthController],
