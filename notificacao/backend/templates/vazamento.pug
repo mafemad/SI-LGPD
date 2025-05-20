@@ -1,0 +1,41 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Data Breach Notification
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border: 1px solid #dddddd;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .warning {
+        color: #b71c1c;
+        font-weight: bold;
+      }
+  body
+    .container
+      .header
+        h1 ⚠️ Aviso de Segurança
+      p Olá #{name},
+      p(class="warning") Identificamos um vazamento de dados em nossos sistemas que pode ter afetado suas informações.
+      p Já entramos em contato com os orgãos reponsãveis para averiguar a situação. Por precaução, recomendamos que você tome as seguintes medidas imediatamente:
+      ul
+        li Altere sua senha de acesso ao nosso sistema.
+        li Evite reutilizar senhas usadas em outros serviços.
+        li Fique atento a e-mails ou mensagens suspeitas.
+      p Se tiver dúvidas ou precisar de ajuda, nossa equipe de suporte está à disposição.
+      p Agradecemos pela sua compreensão e estamos trabalhando ativamente para resolver a situação.
