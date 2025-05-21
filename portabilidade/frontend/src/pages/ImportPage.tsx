@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 const ImportPage = () => {
   const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleCreate = async () => {
     const res = await fetch("http://localhost:3001/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, cpf }),
+      body: JSON.stringify({ email, password}),
     });
 
     const user = await res.json();
@@ -63,9 +63,9 @@ const ImportPage = () => {
             onBlur={(e) => e.target.style.borderColor = '#dfe6e9'}
           />
           <input
-            placeholder="CPF"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             style={{
               padding: '12px 14px',
               border: '1px solid #dfe6e9',
