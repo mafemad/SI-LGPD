@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showTermModal, setShowTermModal] = useState(false);
   const [showFullTerm, setShowFullTerm] = useState(false);
+  const [accepted, setAccepted] = useState(false); // <-- novo estado para o checkbox
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -94,6 +95,7 @@ const Dashboard = () => {
       alert('Termo aceito e preferências salvas com sucesso!');
       setShowTermModal(false);
       setHasChanges(false);
+      setAccepted(false);
 
       const updatedUser = { ...user, acceptedTermId: term.id, preferences };
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -215,10 +217,27 @@ const Dashboard = () => {
               </div>
             ))}
 
+            <div className="mt-6">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                />
+                <span className="text-sm">
+                  Eu li e aceito os termos de consentimento apresentados acima.
+                </span>
+              </label>
+            </div>
+
             <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={handleAcceptTerm}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                disabled={!accepted}
+                className={`px-4 py-2 rounded text-white transition ${
+                  accepted ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+                }`}
               >
                 Aceitar Termo
               </button>

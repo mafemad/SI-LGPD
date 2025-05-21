@@ -38,17 +38,19 @@ export default function Register() {
         name,
         isAdmin: false,
         termId: term.id,
-        preferences: preferencesMap,
       });
 
       const user = res.data;
-
+      console.log(user)
       // Registro do aceite do termo com as preferências
       await api.post('/terms/accept', {
         userId: user.id,
         termId: term.id,
         preferencesMap,
       });
+
+      console.log(user.id, preferencesMap)
+      await api.put(`/preferences/${user.id}`, preferencesMap);
 
       localStorage.setItem('user', JSON.stringify(user));
       navigate('/dashboard');
