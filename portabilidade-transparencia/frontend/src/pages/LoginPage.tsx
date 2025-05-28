@@ -118,7 +118,7 @@ const LoginPage = () => {
         </div>
 
         <button
-          onClick={handleLogin}
+        onClick={handleLogin}
           style={{
             width: '100%',
             padding: '12px',
@@ -137,8 +137,9 @@ const LoginPage = () => {
           onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
           onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          Entrar
+          Login
         </button>
+
 
         <p style={{ color: '#555', marginTop: '20px' }}>
           Não tem conta?
