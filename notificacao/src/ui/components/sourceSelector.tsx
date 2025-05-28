@@ -1,11 +1,16 @@
-import { useState } from "react";
 
-export default function SourceSelector() {
-  const [source, setSource] = useState<string>("");
-  const [sqlitePath, setSqlitePath] = useState("");
+interface SourceSelectorProps {
+  source: string;
+  sqlitePath: string;
+  setSqlitePath: Function;
+  setSource: Function;
+}
+
+export default function SourceSelector(props: SourceSelectorProps) {
+  const { source, sqlitePath, setSqlitePath, setSource } = props;
 
   const handleSQLiteSource = async () => {
-    const path = await window.electron.selectTemplate();
+    const path = await window.electron.selectSource();
     if (path) setSqlitePath(path);
   };
 
@@ -14,7 +19,9 @@ export default function SourceSelector() {
       case "mysql":
       case "postgres":
         return (
-          <form style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          <form
+            style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+          >
             <input placeholder="Host" name="host" />
             <input placeholder="Porta" name="port" />
             <input placeholder="Usuário" name="user" />
@@ -42,13 +49,13 @@ export default function SourceSelector() {
       style={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
       }}
     >
       <select onChange={(event) => setSource(event.target.value)}>
         <option value="">Selecione uma fonte</option>
-        <option value="mysql">MySQL</option>
-        <option value="postgres">PostgreSQL</option>
+        {/* <option value="mysql">MySQL</option>
+        <option value="postgres">PostgreSQL</option> */}
         <option value="sqlite">SQLite</option>
       </select>
 

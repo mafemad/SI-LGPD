@@ -4,6 +4,9 @@ import pug from "pug";
 import { Repository } from "typeorm";
 import { AppDataSource as db } from "./db.js";
 import { User } from "./entity/User.js";
+import DBFactory from "./db.factory.js";
+import { get } from "http";
+import { readFileSync } from "fs";
 
 interface SendMailParams {
   host: string;
@@ -11,10 +14,16 @@ interface SendMailParams {
   user: string;
   pass: string;
   template: string;
+  path?: string;
+}
+
+function getExtension(filePath: string): string {
+  const parts = filePath.split(".");
+  return parts.length > 1 ? parts.pop() || "" : "";
 }
 
 async function sendMails(params: SendMailParams) {
-  const { template, host, user, pass, port } = params;
+  const { template, host, user, pass, port, path } = params;
   if (!template || !host || !user || !pass || !port) {
     throw new Error(
       "Parametros inválidos. Verifique se todos os campos foram preenchidos corretamente."
@@ -46,14 +55,7 @@ async function sendMails(params: SendMailParams) {
   console.log("Transporter criado com sucesso!");
   console.log("Conectando ao banco de dados...");
 
-  await db
-    .initialize()
-    .then(() => {
-      console.log("Data Source iniciado com sucesso!");
-    })
-    .catch((err) => {
-      console.error("Error during Data Source initialization", err);
-    });
+  const db = (await DBFactory.getInstance(path)).getDataSource();
 
   const userRepository: Repository<User> = db.getRepository(User);
 
@@ -61,30 +63,48 @@ async function sendMails(params: SendMailParams) {
   const usersList: User[] = await userRepository.find();
   console.log(`${usersList.length} encontrados no banco de dados.`);
 
-  usersList.forEach(async (user) => {
+  const promises = usersList.map((user) => {
     if (!user.email) {
       console.log(`User with ID ${user.id} does not have an email address.`);
-      return;
+      return Promise.resolve();
     }
 
-    const sendMailParams = {
-      from: "support@noreply.com",
-      to: user.email,
-      subject: "Alerta de vazamento de dados",
-      template: "vazamento",
-      context: {
-        name: user.name,
-      },
-      html: pug.compileFile(template)({ name: user.name }),
-    };
+    let sendMailParams;
 
-    await transporter
+    switch (getExtension(template)) {
+      case "pug":
+        sendMailParams = {
+          from: "support@noreply.com",
+          to: user.email,
+          subject: "Alerta de vazamento de dados",
+          html: pug.compileFile(template)({ name: user.name }),
+        };
+        break;
+      case "html":
+        sendMailParams = {
+          from: "support@noreply.com",
+          to: user.email,
+          subject: "Alerta de vazamento de dados",
+          html: readFileSync(template, "utf-8"),
+        };
+        break;
+      default:
+        console.error(`Unsupported template format for user ${user.email}`);
+        return Promise.resolve();
+    }
+
+    return transporter
       .sendMail(sendMailParams)
-      .then(() => console.log("Enviando para ", user.email, "..."))
+      .then(() => console.log("Enviado para", user.email))
       .catch((error) => {
-        console.error(`Something went wrong while sending mail: ${error}`);
+        console.error(`Erro ao enviar para ${user.email}:`, error);
       });
   });
+
+  await Promise.all(promises);
+
+  console.log("Todos os e-mails foram enviados!");
+  return { success: true, message: "E-mails enviados com sucesso!" };
 }
 
-export { sendMails };
+export { sendMails, SendMailParams };

@@ -4,19 +4,23 @@ declare global {
   interface Window {
     electron: {
       selectTemplate: () => Promise<string>;
-      sendMails: (params: any) => Promise<{ success: boolean; error?: string }>;
+      selectSource: () => Promise<string>;
+      sendMails: (
+        params: any
+      ) => Promise<{ success: boolean; error?: string; message: string }>;
     };
   }
 }
 
-export default function SMTPForm() {
+export default function SMTPForm(props: { path: string }) {
   const [host, setHost] = useState("");
   const [port, setPort] = useState("");
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [templatePath, setTemplatePath] = useState("");
-  const [statusMessage, setStatusMessage] = useState(""); // 👈 estado de feedback
-  const [statusColor, setStatusColor] = useState("black"); // opcional: cor de feedback
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusColor, setStatusColor] = useState("black");
+  const { path } = props;
 
   const handleSelectTemplate = async () => {
     const path = await window.electron.selectTemplate();
@@ -29,13 +33,20 @@ export default function SMTPForm() {
     setStatusMessage("Enviando e-mails...");
     setStatusColor("blue");
 
-    const params = { host, pass: password, port, template: templatePath, user };
+    const params = {
+      host,
+      pass: password,
+      port,
+      template: templatePath,
+      user,
+      path,
+    };
 
     try {
       const result = await window.electron.sendMails(params);
 
       if (result.success) {
-        setStatusMessage("✅ E-mails enviados com sucesso!");
+        setStatusMessage(result.message);
         setStatusColor("green");
       } else {
         setStatusMessage("❌ Erro ao enviar e-mails: " + result.error);
@@ -79,7 +90,11 @@ export default function SMTPForm() {
       />
       <div style={{ flexDirection: "column" }}>
         <div
-          style={{ justifyContent: "space-between", alignContent: "center", gap: "2px" }}
+          style={{
+            justifyContent: "space-between",
+            alignContent: "center",
+            gap: "2px",
+          }}
         >
           <label
             style={{ justifyContent: "space-between", alignContent: "center" }}
