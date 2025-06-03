@@ -50,19 +50,31 @@ Cada aplicativo tem como objetivo educar e demonstrar, de forma prática, como a
 
 ---
 
-### 3. Transparência de Dados
-**Nome:** "Seus Dados na Nossa Empresa"
+# 3. Transparência de Dados
+  A Transparência de dados, conforme a Lei Geral de Proteção de Dados (LGPD), é o princípio que garante aos usuários o direito de saber, de forma clara, quais os seus dados pessoais estão sendo coletados, armazenados, utilizados e protegidos pelo sistema. Esse princípio foi exemplificado no projeto através das seguintes implementações:
 
-**Objetivo:** Exibir ao usuário quais dados a empresa armazena e como são utilizados.
+## Tela de Login com segurança reforçada
 
-**Funcionalidades:**
-- Tela que **lista os dados coletados** e a finalidade de cada um.
-- Botão "Saiba mais" que exibe **detalhes sobre o uso de cada dado**.
-- Opção para **atualizar ou corrigir informações pessoais**.
+- Exigência de senhas fortes.
+- Implementação do **bcrypt**, onde as senhas originais fornecidas pelos usuários não são armazenadas em texto plano, pois antes de serem salvas no banco de dados, elas passam por um processo de hashing além de se adicionar um salt aleatório.
+- Implementação do **JWT (JSON Web Token)** , onde após um Login com sucesso é gerado um token e somente a partir da validação desse token é possível ter a autorização para a visualizar e alterar as informações do usuário que está logado.
+- Garante ao usuário que somente ele pode acessar e controlar seus dados.
 
-**Tecnologia:**
-- **Frontend:** React.
-- **Backend:** NestJS com PostgreSQL/MongoDB para armazenar os dados.
+## Criação de Usuário 
+
+- O sistema solicita de forma explícita dados como nome, e-mail, idade, CPF, endereço e senha. Assim o usuário sabe exatamente quais informações está fornecendo para o sistema.
+
+## Listagem de Dados
+
+- Após autenticado, o usuário pode acessar uma tela que exibe de forma explícita todos os seus dados armazenados, atendendo ao direito de acesso e visualização de informações.
+
+## Edição de Dados
+
+- O sistema oferece a possibilidade do usuário atualizar ou corrigir seus dados garantindo que ele tenha controle sobre as informações que o sistema possui a seu respeito.
+
+
+
+
 
 ---
 
