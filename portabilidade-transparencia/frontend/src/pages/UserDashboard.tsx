@@ -23,18 +23,17 @@ export const UserDashboard: React.FC = () => {
     navigate("/editar-usuario");
   };
 
-const handleExport = () => {
-  if (!user) return;
+  const handleExport = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Token não encontrado. Faça login novamente.");
+      navigate("/");
+      return;
+    }
 
-  // Codifica os dados do usuário como string segura para URL
-  const encodedData = encodeURIComponent(JSON.stringify(user));
-
-  // Redireciona para a página Profile com os dados na URL
-  window.location.href = `http://localhost:5173/profile?data=${encodedData}`;
-};
-
-
-
+    const redirectURL = `http://localhost:5173/portability/callback?token=${token}`;
+    window.location.href = redirectURL;
+  };
 
   if (!user) return <div>Carregando...</div>;
 

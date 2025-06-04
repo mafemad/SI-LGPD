@@ -1,38 +1,34 @@
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
-import { SweetAlert } from "../components/SweetAlert/SweetAlert";
-import { Spin } from "antd";
-import { getPortabilityToken } from "../services/easy-terms";
+import { JSX, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export default function PortabilityCallback(){
-    const [searchParams] = useSearchParams()
-    const {login} = useAuth()
-    const navigate = useNavigate()
-    const [ready, setReady] = useState(false)
-    const token = searchParams.get('token')
+export default function PortabilityCallback(): JSX.Element {
+  const navigate = useNavigate();
+  const { loginWithToken } = useAuth();
 
-    const fetchUserInfo = async () => {
-        try{
-            if(token){
-                const newToken = await getPortabilityToken(token)
-                login(newToken)
-                setReady(true)
-            }
-        }catch(e){
-            console.error(e)
-            SweetAlert.error('Ops!', 'Falha ao importar dados')
-            navigate('/')
+  useEffect(() => {
+    const handleCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (token) {
+        console.log("Token recebido:", token);
+        try {
+          await loginWithToken(token); // Aguarda o login
+          navigate("/profile");
+        } catch (err) {
+          console.error("Erro ao fazer login com token:", err);
+          alert("Erro ao processar token.");
+          navigate("/login");
         }
-    }
+      } else {
+        alert("Token não encontrado na URL.");
+        navigate("/login");
+      }
+    };
 
-    useEffect(() => {
-        fetchUserInfo()
-    }, [])
+    handleCallback();
+  }, [navigate, loginWithToken]);
 
-    if(!ready){
-        return <Spin/>
-    }else{
-        return <Navigate to="/profile"/>
-    }
+  return <p>Autenticando com Sistema I...</p>;
 }

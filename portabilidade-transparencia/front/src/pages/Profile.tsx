@@ -1,34 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-interface User {
-  name: string;
-  cpf: string;
-  email: string;
-  address: string;
-  age: number;
-}
-
-const Profile: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+export default function Profile() {
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const data = params.get('data');
+    const query = new URLSearchParams(window.location.search);
+    const data = query.get("data");
+
     if (data) {
       try {
-        const parsedUser = JSON.parse(decodeURIComponent(data));
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Erro ao decodificar os dados:", error);
+        const decoded = JSON.parse(decodeURIComponent(data));
+        setUser(decoded);
+        localStorage.setItem("user", JSON.stringify(decoded)); // opcional
+      } catch (err) {
+        console.error("Erro ao decodificar dados:", err);
       }
     }
   }, []);
 
-  if (!user) return <div>Nenhuma informação disponível</div>;
+  if (!user) return <div>Carregando dados...</div>;
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'Arial' }}>
-      <h1>Informações do Usuário</h1>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1>Perfil Importado</h1>
       <p><strong>Nome:</strong> {user.name}</p>
       <p><strong>CPF:</strong> {user.cpf}</p>
       <p><strong>Email:</strong> {user.email}</p>
@@ -36,6 +30,4 @@ const Profile: React.FC = () => {
       <p><strong>Idade:</strong> {user.age}</p>
     </div>
   );
-};
-
-export default Profile;
+}

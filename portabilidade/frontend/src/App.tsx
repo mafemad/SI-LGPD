@@ -8,6 +8,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/import" element={<ImportPage />} />
+        <Route path="/portability/callback" element={<PortabilityCallback />} />
       </Routes>
     </BrowserRouter>
   );

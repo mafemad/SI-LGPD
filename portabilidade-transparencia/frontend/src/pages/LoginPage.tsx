@@ -19,7 +19,6 @@ const LoginPage = () => {
       });
 
       if (!res.ok) {
-      
         if (res.status === 401) {
           alert("Senha incorreta ou usuário inválido.");
         } else if (res.status === 403) {
@@ -37,12 +36,9 @@ const LoginPage = () => {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("userId", user.id);
       localStorage.setItem("token", token);
-      
-      if (user.email === "admin@email.com") {
-        navigate("/admin");
-      } else {
-        navigate("/user");
-      }
+
+      // ✅ Redireciona para o dashboard do usuário
+      navigate("/user");
     } catch (err) {
       alert("Erro de conexão com o servidor.");
     }
@@ -118,7 +114,7 @@ const LoginPage = () => {
         </div>
 
         <button
-        onClick={handleLogin}
+          onClick={handleLogin}
           style={{
             width: '100%',
             padding: '12px',
@@ -139,7 +135,6 @@ const LoginPage = () => {
         >
           Login
         </button>
-
 
         <p style={{ color: '#555', marginTop: '20px' }}>
           Não tem conta?
