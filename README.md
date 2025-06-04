@@ -56,7 +56,7 @@ Cada aplicativo tem como objetivo educar e demonstrar, de forma prática, como a
 ## Tela de Login com segurança reforçada
 
 - Exigência de senhas fortes.
-- Implementação do **bcrypt**, onde as senhas originais fornecidas pelos usuários não são armazenadas em texto plano, pois antes de serem salvas no banco de dados, elas passam por um processo de hashing além de se adicionar um salt aleatório.
+- Implementação do **bcrypt**, onde as senhas originais fornecidas pelos usuários não são armazenadas em texto plano, pois antes de serem salvas no banco de dados, elas passam por um processo de hashing (onde a senha é transformada em uma sequência de caracteres de comprimento fixo) além de se adicionar um salt aleatório (acrescenta aleatoriamente sequências de caracteres a senha), aumentando a segurança.
 - Implementação do **JWT (JSON Web Token)** , onde após um Login com sucesso é gerado um token e somente a partir da validação desse token é possível ter a autorização para a visualizar e alterar as informações do usuário que está logado.
 - Garante ao usuário que somente ele pode acessar e controlar seus dados.
 
