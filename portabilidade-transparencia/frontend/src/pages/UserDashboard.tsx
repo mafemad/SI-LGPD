@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 
-const SECRET_KEY = 'minha-chave-secreta'; // troque por uma chave segura
+const SECRET_KEY = 'HFXm!7265EHOa130205';
 
 const spinnerStyle: React.CSSProperties = {
   width: '50px',
@@ -29,16 +29,13 @@ export const UserDashboard: React.FC = () => {
     const parsedUser = JSON.parse(data);
     setUser(parsedUser);
 
-    // Após 3 segundos, troca loading para false (mostra mensagem)
     const loadingTimer = setTimeout(() => {
       setLoading(false);
-    }, 3000);
+    }, 2000);
 
-    // Criptografa e codifica os dados para envio
     const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(parsedUser), SECRET_KEY).toString();
     const encodedData = encodeURIComponent(encryptedData);
 
-    // Redireciona após 5 segundos
     const redirectTimer = setTimeout(() => {
       window.location.href = `http://localhost:5173/profile?data=${encodedData}`;
     }, 2000);

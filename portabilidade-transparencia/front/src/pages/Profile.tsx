@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CryptoJS from 'crypto-js';
+import { Card, Typography } from 'antd';
 
 interface User {
   name: string;
@@ -9,7 +10,7 @@ interface User {
   age: number;
 }
 
-const SECRET_KEY = 'minha-chave-secreta'; // mesma chave usada para criptografia
+const SECRET_KEY = 'HFXm!7265EHOa130205';
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +21,6 @@ const Profile: React.FC = () => {
 
     if (encryptedData) {
       try {
-        // Descriptografa os dados
         const bytes = CryptoJS.AES.decrypt(decodeURIComponent(encryptedData), SECRET_KEY);
         const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
 
@@ -36,16 +36,63 @@ const Profile: React.FC = () => {
     }
   }, []);
 
-  if (!user) return <div>Nenhuma informação disponível</div>;
+  if (!user) {
+    return (
+      <div
+        style={{
+          height: '100vh',
+          background: 'linear-gradient(135deg, #e0f2ff, #cce4ff)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontFamily: 'Arial',
+        }}
+      >
+        <Typography.Text style={{ fontSize: 18, color: '#003366' }}>
+          Nenhuma informação disponível
+        </Typography.Text>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'Arial' }}>
-      <h1>Informações do Usuário</h1>
-      <p><strong>Nome:</strong> {user.name}</p>
-      <p><strong>CPF:</strong> {user.cpf}</p>
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Endereço:</strong> {user.address}</p>
-      <p><strong>Idade:</strong> {user.age}</p>
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #e0f2ff, #cce4ff)',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '2rem',
+        fontFamily: 'Arial',
+      }}
+    >
+      <Card
+        title="Informações do Usuário"
+        headStyle={{ textAlign: 'center', color: '#003366', fontSize: 22 }}
+        style={{
+          width: 450,
+          borderRadius: 16,
+          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+          background: '#ffffffee',
+        }}
+      >
+        <Typography.Paragraph>
+          <strong>Nome:</strong> {user.name}
+        </Typography.Paragraph>
+        <Typography.Paragraph>
+          <strong>CPF:</strong> {user.cpf}
+        </Typography.Paragraph>
+        <Typography.Paragraph>
+          <strong>Email:</strong> {user.email}
+        </Typography.Paragraph>
+        <Typography.Paragraph>
+          <strong>Endereço:</strong> {user.address}
+        </Typography.Paragraph>
+        <Typography.Paragraph>
+          <strong>Idade:</strong> {user.age}
+        </Typography.Paragraph>
+      </Card>
     </div>
   );
 };
