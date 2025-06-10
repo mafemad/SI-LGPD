@@ -6,6 +6,7 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
+  userRepository: any;
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
   async create(data: Partial<User>) {
@@ -39,9 +40,13 @@ export class UserService {
     return this.userRepo.find();
   }
 
-  findById(id: number) {
-    return this.userRepo.findOne({ where: { id } });
-  }
+async findById(id: number) {
+  return await this.userRepository.findOne({
+    where: { id },
+    select: ['id', 'name', 'cpf', 'email', 'address', 'age'], // selecione os campos explicitamente
+  });
+}
+
 
   findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });

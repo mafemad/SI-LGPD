@@ -1,14 +1,7 @@
 import { Button, Form, Typography, Card } from 'antd';
-import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+
 
 export default function Login() {
-  const {authenticated} = useAuth()
-
-  if(authenticated){
-    return <Navigate to="/profile"/>
-  }
-
   const onSubmit = async () => {
     window.location.assign(`http://localhost:5173/portability/login?app_name=TalensA&redirectTo=http://localhost:5174/portability/callback/`)
   }
@@ -36,7 +29,7 @@ export default function Login() {
           Sistema I
         </Typography.Title>
         <Typography.Text style={{ display: 'block', textAlign: 'center', marginBottom: 24 }}>
-          Banco de talentos. Escolha uma das opções para entrar
+          Faça o login através de um sistema parceiro!
         </Typography.Text>
 
         <Form onFinish={onSubmit} layout="vertical">
@@ -48,7 +41,7 @@ export default function Login() {
               style={{ background: '#002918' }}
               onClick={() => window.location.href = 'http://localhost:5174/'}
             >
-              Entrar com Login Caua
+              Fazer Login com Sistema II
             </Button>
           </Form.Item>
         </Form>

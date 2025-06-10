@@ -139,25 +139,6 @@ const LoginPage = () => {
         >
           Login
         </button>
-
-
-        <p style={{ color: '#555', marginTop: '20px' }}>
-          Não tem conta?
-          <button
-            onClick={() => navigate("/register")}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#5c7cfa',
-              marginLeft: '6px',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              fontWeight: 'bold'
-            }}
-          >
-            Criar Conta
-          </button>
-        </p>
       </div>
     </div>
   );
