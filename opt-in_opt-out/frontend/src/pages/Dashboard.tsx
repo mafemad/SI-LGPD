@@ -3,6 +3,18 @@ import type { PreferenceMap, User, Preference, ConsentTerm } from '../types/inde
 import api from '../api/api';
 import PreferenceItem from '../components/PreferenceItem';
 import { useNavigate } from 'react-router-dom';
+import {
+  Typography,
+  Button,
+  Modal,
+  Checkbox,
+  Alert,
+  Divider,
+  Space,
+  message,
+} from 'antd';
+
+const { Title, Paragraph, Text } = Typography;
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -13,7 +25,7 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showTermModal, setShowTermModal] = useState(false);
   const [showFullTerm, setShowFullTerm] = useState(false);
-  const [accepted, setAccepted] = useState(false); // <-- novo estado para o checkbox
+  const [accepted, setAccepted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +38,6 @@ const Dashboard = () => {
     const parsed = JSON.parse(userData);
     setUser(parsed);
     setPreferences(parsed.preferences || {});
-
     fetchNotifications(parsed.id);
     fetchActiveTerm(parsed.id);
   }, []);
@@ -92,7 +103,7 @@ const Dashboard = () => {
       await api.put(`/preferences/${user.id}`, preferences);
       await markTermNotificationAsRead();
 
-      alert('Termo aceito e preferências salvas com sucesso!');
+      message.success('Termo aceito e preferências salvas com sucesso!');
       setShowTermModal(false);
       setHasChanges(false);
       setAccepted(false);
@@ -101,7 +112,7 @@ const Dashboard = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
     } catch (error) {
-      alert('Erro ao aceitar termo ou salvar preferências.');
+      message.error('Erro ao aceitar termo ou salvar preferências.');
     }
   };
 
@@ -110,15 +121,14 @@ const Dashboard = () => {
 
     try {
       await api.put(`/preferences/${user.id}`, preferences);
-      alert('Preferências salvas com sucesso!');
+      message.success('Preferências salvas com sucesso!');
       setHasChanges(false);
 
       const updatedUser = { ...user, preferences };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
     } catch (error) {
-      alert('Erro ao salvar preferências.');
-      console.error(error);
+      message.error('Erro ao salvar preferências.');
     }
   };
 
@@ -142,132 +152,112 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-2">Bem-vindo, {user?.name}</h2>
-      <p className="text-gray-600 mb-6">Gerencie abaixo suas preferências de comunicação.</p>
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
+      <Title level={2}>Bem-vindo, {user?.name}</Title>
+      <Paragraph type="secondary">Gerencie abaixo suas preferências de comunicação.</Paragraph>
 
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Preferências de Comunicação</h3>
-        {allPreferences.map((pref) => (
-          <div key={pref.id} className="mb-4">
+      <Divider orientation="left">Preferências de Comunicação</Divider>
+
+      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        {allPreferences.map(pref => (
+          <div key={pref.id}>
             <PreferenceItem
               name={pref.name}
               optedIn={preferences[pref.name] ?? false}
-              onChange={(value) => handleChange(pref.name, value)}
+              onChange={value => handleChange(pref.name, value)}
             />
-            <p className="text-sm text-gray-600">{pref.description}</p>
+            <Text type="secondary" style={{ fontSize: 12 }}>{pref.description}</Text>
           </div>
         ))}
-        {hasChanges && (
-          <p className="text-red-600 mt-4">
-            Você fez alterações. Não esqueça de salvar!
-          </p>
-        )}
-      </section>
+        {hasChanges && <Alert type="warning" message="Você fez alterações. Não esqueça de salvar!" />}
+      </Space>
 
-      <div className="mt-6 flex flex-wrap gap-4">
-        <button
+      <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
+        <Button
+          type="primary"
           onClick={handleSavePreferences}
           disabled={!hasChanges}
-          className={`px-4 py-2 rounded text-white transition ${
-            hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-          }`}
         >
           Salvar Preferências
-        </button>
-        <button
-          onClick={() => navigate('/history')}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        >
-          Ver Histórico
-        </button>
+        </Button>
+        <Button onClick={() => navigate('/history')}>Ver Histórico</Button>
       </div>
 
-      <div className="mt-10">
-        <h3 className="text-lg font-semibold mb-2">Sessão</h3>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
-      </div>
+      <Divider orientation="left">Sessão</Divider>
+      <Button danger onClick={handleLogout}>
+        Logout
+      </Button>
 
-      {showTermModal && term && (
-        <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-[90%] max-w-xl shadow-xl max-h-[90vh] overflow-auto">
-            <h3 className="text-lg font-bold mb-4">Novo Termo de Consentimento</h3>
-
-            <button
+      <Modal
+        open={showTermModal}
+        title="Novo Termo de Consentimento"
+        onCancel={() => setShowTermModal(false)}
+        footer={[
+          <Button key="logout" danger onClick={handleLogout}>
+            Logout
+          </Button>,
+          <Button
+            key="accept"
+            type="primary"
+            onClick={handleAcceptTerm}
+            disabled={!accepted}
+          >
+            Aceitar Termo
+          </Button>,
+        ]}
+      >
+        {term && (
+          <>
+            <Button
+              type="link"
               onClick={() => setShowFullTerm(true)}
-              className="text-blue-600 underline mb-4"
+              style={{ padding: 0 }}
             >
               Ver termo completo
-            </button>
+            </Button>
 
-            <h4 className="font-semibold mt-4">Escolha suas preferências:</h4>
-            {term.preferences.map((pref) => (
-              <div key={pref.id} className="mb-2">
-                <PreferenceItem
-                  name={pref.name}
-                  optedIn={preferences[pref.name] || false}
-                  onChange={(value) => handleChange(pref.name, value)}
-                />
-                <p className="text-sm text-gray-600">{pref.description}</p>
-              </div>
-            ))}
+            <Divider orientation="left" style={{ marginTop: 16 }}>
+              Preferências
+            </Divider>
 
-            <div className="mt-6">
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={accepted}
-                  onChange={(e) => setAccepted(e.target.checked)}
-                />
-                <span className="text-sm">
-                  Eu li e aceito os termos de consentimento apresentados acima.
-                </span>
-              </label>
-            </div>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              {term.preferences.map(pref => (
+                <div key={pref.id}>
+                  <PreferenceItem
+                    name={pref.name}
+                    optedIn={preferences[pref.name] || false}
+                    onChange={value => handleChange(pref.name, value)}
+                  />
+                  <Text type="secondary" style={{ fontSize: 12 }}>{pref.description}</Text>
+                </div>
+              ))}
+            </Space>
 
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                onClick={handleAcceptTerm}
-                disabled={!accepted}
-                className={`px-4 py-2 rounded text-white transition ${
-                  accepted ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-                }`}
-              >
-                Aceitar Termo
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+            <Checkbox
+              style={{ marginTop: 24 }}
+              checked={accepted}
+              onChange={e => setAccepted(e.target.checked)}
+            >
+              Eu li e aceito os termos de consentimento apresentados acima.
+            </Checkbox>
+          </>
+        )}
+      </Modal>
+
+      <Modal
+        open={showFullTerm}
+        title="Conteúdo do Termo"
+        onCancel={() => setShowFullTerm(false)}
+        footer={[
+          <Button key="close" onClick={() => setShowFullTerm(false)}>
+            Fechar
+          </Button>,
+        ]}
+      >
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+          {term?.content}
         </div>
-      )}
-
-      {showFullTerm && term && (
-        <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-[90%] max-w-2xl shadow-xl max-h-[90vh] overflow-auto">
-            <h3 className="text-lg font-bold mb-4">Conteúdo do Termo</h3>
-            <div className="prose mb-4 whitespace-pre-wrap">{term.content}</div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowFullTerm(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };

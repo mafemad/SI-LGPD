@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import type { HistoryEntry } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { Typography, List, Card, Pagination, Button, Alert, Space } from 'antd';
+
+const { Title, Text } = Typography;
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,93 +30,80 @@ const History = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const goToPreviousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const goToNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded mt-8">
-      <h2 className="text-3xl font-bold mb-6 text-center">Histórico de Alterações</h2>
+    <Card style={{ maxWidth: 800, margin: '40px auto' }}>
+      <Title level={3} style={{ textAlign: 'center' }}>
+        Histórico de Alterações
+      </Title>
 
       {history.length === 0 ? (
-        <p className="text-center text-gray-500">Nenhuma alteração registrada ainda.</p>
+        <Alert
+          message="Nenhuma alteração registrada ainda."
+          type="info"
+          showIcon
+          style={{ textAlign: 'center', marginTop: 24 }}
+        />
       ) : (
         <>
-          <ul className="space-y-4 text-sm">
-            {paginatedHistory.map((h) => (
-              <li key={h.id} className="bg-gray-50 border border-gray-200 p-4 rounded">
-                <div className="mb-1 text-gray-600">
-                  [{new Date(h.timestamp).toLocaleString()}]
-                </div>
-                <div>
-                  Você realizou <strong>{h.action === 'opt-in' ? 'opt-in' : 'opt-out'}</strong> em{' '}
-                  {h.preference ? (
-                    <em className="text-blue-600 font-medium">{h.preference.name}</em>
-                  ) : h.preferenceName ? (
-                    <em className="text-red-500 font-medium italic">
-                      {h.preferenceName} (removida)
-                    </em>
-                  ) : (
-                    <em className="text-red-500 font-medium italic">[Preferência removida]</em>
+          <List
+            itemLayout="vertical"
+            size="small"
+            dataSource={paginatedHistory}
+            renderItem={(h) => (
+              <List.Item key={h.id}>
+                <Card type="inner">
+                  <div style={{ marginBottom: 4, color: '#888' }}>
+                    [{new Date(h.timestamp).toLocaleString()}]
+                  </div>
+                  <div>
+                    Você realizou <Text strong>{h.action === 'opt-in' ? 'opt-in' : 'opt-out'}</Text> em{' '}
+                    {h.preference ? (
+                      <Text italic style={{ color: '#1677ff' }}>
+                        {h.preference.name}
+                      </Text>
+                    ) : h.preferenceName ? (
+                      <Text italic type="danger">
+                        {h.preferenceName} (removida)
+                      </Text>
+                    ) : (
+                      <Text italic type="danger">
+                        [Preferência removida]
+                      </Text>
+                    )}
+                    {h.consentTerm?.version !== undefined && (
+                      <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
+                        (termo de consentimento versão {h.consentTerm.version})
+                      </Text>
+                    )}
+                  </div>
+                  {h.preference?.description && (
+                    <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
+                      {h.preference.description}
+                    </Text>
                   )}
-                  {h.consentTerm?.version !== undefined && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    (termo de consentimento versão {h.consentTerm.version})
-                  </span>
-                  )}
-                </div>
-                {h.preference?.description && (
-                  <p className="text-xs text-gray-500 mt-1 pl-4">{h.preference.description}</p>
-                )}
-              </li>
-            ))}
-          </ul>
+                </Card>
+              </List.Item>
+            )}
+          />
 
-          <div className="flex justify-between items-center mt-6 text-sm">
-            <button
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded ${
-                currentPage === 1
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              Anterior
-            </button>
-
-            <span className="text-gray-700">
-              Página {currentPage} de {totalPages}
-            </span>
-
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded ${
-                currentPage === totalPages
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              Próximo
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+            <Pagination
+              current={currentPage}
+              total={history.length}
+              pageSize={ITEMS_PER_PAGE}
+              onChange={(page) => setCurrentPage(page)}
+              showSizeChanger={false}
+            />
           </div>
         </>
       )}
 
-      <div className="mt-8 text-center">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="bg-gray-600 text-white px-5 py-2 rounded hover:bg-gray-700 transition"
-        >
+      <div style={{ textAlign: 'center', marginTop: 32 }}>
+        <Button type="default" onClick={() => navigate('/dashboard')}>
           Voltar
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 };
 

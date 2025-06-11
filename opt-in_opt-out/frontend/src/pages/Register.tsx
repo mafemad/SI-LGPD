@@ -2,6 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import type { Preference, Term } from '../types';
+import {
+  Card,
+  Typography,
+  Input,
+  Checkbox,
+  Button,
+  Modal,
+  Form,
+  message,
+} from 'antd';
+
+const { Title, Paragraph, Text, Link } = Typography;
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -22,18 +34,16 @@ export default function Register() {
   };
 
   const handleRegister = async () => {
-    if (!name.trim()) return alert('Digite um nome');
-    if (!accepted) return alert('Você precisa aceitar os termos para continuar');
-    if (!term) return alert('Termo ativo não encontrado');
+    if (!name.trim()) return message.warning('Digite um nome');
+    if (!accepted) return message.warning('Você precisa aceitar os termos para continuar');
+    if (!term) return message.error('Termo ativo não encontrado');
 
-    // Mapeia as preferências usando o termo
     const preferencesMap: Record<string, boolean> = {};
     term.preferences?.forEach((pref: Preference) => {
       preferencesMap[pref.name] = selectedPrefs[pref.name] ?? false;
     });
 
     try {
-      // Criação do usuário
       const res = await api.post('/users', {
         name,
         isAdmin: false,
@@ -41,118 +51,110 @@ export default function Register() {
       });
 
       const user = res.data;
-      console.log(user)
-      // Registro do aceite do termo com as preferências
+
       await api.post('/terms/accept', {
         userId: user.id,
         termId: term.id,
         preferencesMap,
       });
 
-      console.log(user.id, preferencesMap)
       await api.put(`/preferences/${user.id}`, preferencesMap);
 
       localStorage.setItem('user', JSON.stringify(user));
       navigate('/dashboard');
     } catch (error) {
-      alert('Erro ao registrar ou aceitar termo.');
+      message.error('Erro ao registrar ou aceitar termo.');
     }
   };
 
-  
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Cadastro de Usuário</h1>
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f0f2f5',
+        padding: 16,
+      }}
+    >
+      <Card title="Cadastro de Usuário" style={{ width: 500 }}>
+        <Form layout="vertical" onFinish={handleRegister}>
+          <Form.Item label="Nome" required>
+            <Input
+              placeholder="Digite seu nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Form.Item>
 
-        <input
-          type="text"
-          placeholder="Nome"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        {term && (
-          <div className="mb-4">
-            <label className="flex items-start gap-2 cursor-pointer mb-2">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={accepted}
-                onChange={e => setAccepted(e.target.checked)}
-              />
-              <div className="flex flex-col">
-                <span className="font-medium">Aceito o termo de consentimento</span>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(true)}
-                  className="text-sm text-blue-600 hover:underline text-left p-0 mt-1"
+          {term && (
+            <>
+              <Form.Item>
+                <Checkbox
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
                 >
-                  Visualizar termo
-                </button>
-              </div>
-            </label>
+                  Aceito o termo de consentimento
+                </Checkbox>
+                <div>
+                  <Button
+                    type="link"
+                    onClick={() => setShowModal(true)}
+                    style={{ padding: 0 }}
+                  >
+                    Visualizar termo
+                  </Button>
+                </div>
+              </Form.Item>
 
-            {term.preferences?.length > 0 && (
-              <div className="mt-4">
-                <p className="font-medium mb-2">Preferências (opcional):</p>
-                {term.preferences.map(pref => (
-                  <label key={pref.id} className="flex items-start gap-2 mb-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mt-1"
+              {term.preferences?.length > 0 && (
+                <Form.Item label="Preferências (opcional):">
+                  {term.preferences.map((pref) => (
+                    <Checkbox
+                      key={pref.id}
                       checked={selectedPrefs[pref.name] || false}
-                      onChange={e =>
-                        setSelectedPrefs(prev => ({
+                      onChange={(e) =>
+                        setSelectedPrefs((prev) => ({
                           ...prev,
                           [pref.name]: e.target.checked,
                         }))
                       }
-                    />
-                    <div>
-                      <span className="font-medium">{pref.name}</span>
-                      <p className="text-sm text-gray-600">{pref.description}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                      style={{ display: 'block', marginBottom: 8 }}
+                    >
+                      <Text strong>{pref.name}</Text>
+                      <Paragraph type="secondary" style={{ margin: 0 }}>
+                        {pref.description}
+                      </Paragraph>
+                    </Checkbox>
+                  ))}
+                </Form.Item>
+              )}
+            </>
+          )}
 
-        <button
-          onClick={handleRegister}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Criar Conta
-        </button>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Criar Conta
+            </Button>
+          </Form.Item>
+        </Form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Já tem uma conta?{' '}
-          <a href="/" className="text-blue-600 hover:underline">
-            Faça login
-          </a>
-        </p>
-      </div>
+        <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 16 }}>
+          Já tem uma conta? <Link href="/">Faça login</Link>
+        </Text>
+      </Card>
 
-      {showModal && term && (
-        <div className="fixed inset-0 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
-            <h2 className="text-xl font-bold mb-4">Termo de Consentimento</h2>
-            <pre className="whitespace-pre-wrap text-sm text-gray-800 max-h-[300px] overflow-y-auto">
-              {term.content}
-            </pre>
-            <button
-              className="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-xl"
-              onClick={() => setShowModal(false)}
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showModal}
+        title="Termo de Consentimento"
+        footer={null}
+        onCancel={() => setShowModal(false)}
+      >
+        <pre style={{ whiteSpace: 'pre-wrap', maxHeight: 300, overflowY: 'auto' }}>
+          {term?.content}
+        </pre>
+      </Modal>
     </div>
   );
 }

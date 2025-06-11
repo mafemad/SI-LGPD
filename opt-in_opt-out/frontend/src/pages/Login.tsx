@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/api';
+import { Card, Form, Input, Button, Typography, message } from 'antd';
+
+const { Title, Text } = Typography;
 
 export default function Login() {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!name.trim()) return alert('Digite um nome');
+  const handleLogin = async () => {
+    if (!name.trim()) {
+      message.warning('Digite um nome');
+      return;
+    }
 
     try {
       const res = await api.post('/auth/login', { name });
@@ -16,39 +21,51 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(user));
       navigate(user.isAdmin ? '/admin' : '/dashboard');
     } catch (error) {
-      alert('Usuário não encontrado');
+      message.error('Usuário não encontrado');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f0f2f5',
+        padding: 16,
+      }}
+    >
+      <Card style={{ width: 360 }}>
+        <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
+          Login
+        </Title>
 
-        <form onSubmit={handleLogin}>
-          <input
-            type="text"
-            placeholder="Nome"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full border border-gray-300 rounded px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <Form layout="vertical" onFinish={handleLogin}>
+          <Form.Item label="Nome" required>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Digite seu nome"
+            />
+          </Form.Item>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            Entrar
-          </button>
-        </form>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Entrar
+            </Button>
+          </Form.Item>
+        </Form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 16 }}>
           Não tem conta?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Cadastre-se
+          <Link to="/register">
+            <Text type="secondary" strong>
+              Cadastre-se
+            </Text>
           </Link>
-        </p>
-      </div>
+        </Text>
+      </Card>
     </div>
   );
 }
