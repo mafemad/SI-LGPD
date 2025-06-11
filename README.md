@@ -16,20 +16,16 @@ Cada aplicativo tem como objetivo educar e demonstrar, de forma prática, como a
 ## Aplicativos e Funcionalidades
 
 ### 1. Portabilidade de Dados
-**Nome:** "Meu Histórico de Dados"
 
-**Objetivo:** Demonstrar o direito à portabilidade de dados, permitindo que os usuários baixem suas informações em diferentes formatos.
+**Objetivo:** Demonstrar o direito à portabilidade de dados, permitindo que os usuários importem as informações de um sistema parceiro.
 
 **Funcionalidades:**
-- Exibir os dados armazenados do usuário (exemplo: nome, e-mail, histórico de compras).
-- Botão para exportar os dados em **JSON** ou **CSV**.
-- Opção de **download direto** ou **envio por e-mail**.
-- Registro das exportações feitas para consulta futura.
+- Exportar as informações criptografadas
+- Importar as informações de um sistema para o outro
 
 **Tecnologia:**
-- **Frontend:** React (com Axios para comunicação com a API).
+- **Frontend:** React, TSX (com Axios para comunicação com a API).
 - **Backend:** NestJS com PostgreSQL ou MongoDB.
-- **Exportação:** JSON e CSV.
 
 ---
 
