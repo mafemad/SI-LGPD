@@ -7,7 +7,7 @@ export default function App() {
   return (
     <Routes>
       {/* Rota pública (sem autenticação, sem layout) */}
-      <Route path="/" element={<Login />} />
+      <Route path="/portabilidade" element={<Login />} />
       <Route path="/portability/callback" element={<PortabilityCallback />} />
       <Route path="/profile" element={<Profile />} />
     </Routes>

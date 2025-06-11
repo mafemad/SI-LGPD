@@ -41,7 +41,7 @@ const LoginPage = () => {
       if (user.email === "admin@email.com") {
         navigate("/admin");
       } else {
-        navigate("/user");
+        navigate("/usuario");
       }
     } catch (err) {
       alert("Erro de conexão com o servidor.");

@@ -43,7 +43,7 @@ export class UserService {
 async findById(id: number) {
   return await this.userRepository.findOne({
     where: { id },
-    select: ['id', 'name', 'cpf', 'email', 'address', 'age'], // selecione os campos explicitamente
+    select: ['id', 'name', 'cpf', 'email', 'address', 'age'], 
   });
 }
 

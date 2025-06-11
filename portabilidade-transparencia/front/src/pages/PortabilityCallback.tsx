@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import { SweetAlert } from "../components/SweetAlert/SweetAlert";
 import { Spin } from "antd";
-import { getPortabilityToken } from "../services/easy-terms";
+import { getPortabilityToken } from "../services/portabilityAPI";
 
 export default function PortabilityCallback(){
     const [searchParams] = useSearchParams()

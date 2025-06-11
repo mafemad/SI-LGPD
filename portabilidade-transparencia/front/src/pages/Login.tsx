@@ -3,7 +3,7 @@ import { Button, Form, Typography, Card } from 'antd';
 export default function Login() {
   const onSubmit = async () => {
     window.location.assign(
-      `http://localhost:5173/portability/login?app_name=TalensA&redirectTo=http://localhost:5174/portability/callback/`
+      `http://localhost:5173/portabilidade/login?&redirectTo=http://localhost:5174/portabilidade/login/`
     );
   };
 
@@ -61,7 +61,7 @@ export default function Login() {
                 borderRadius: 8,
               }}
               onClick={() =>
-                (window.location.href = 'http://localhost:5174/')
+                (window.location.href = 'http://localhost:5174/portabilidade/login')
               }
             >
               Fazer Login com Sistema II

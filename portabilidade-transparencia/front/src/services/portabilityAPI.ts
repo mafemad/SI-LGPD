@@ -1,11 +1,11 @@
 import axios, { AxiosError } from 'axios';
-import { redirect, useNavigate } from 'react-router-dom';
+import { redirect } from 'react-router-dom';
 
-const EasyTermsApi = axios.create({
+const PortabilityAPI = axios.create({
   baseURL: 'http://localhost:8000',
 });
 
-EasyTermsApi.interceptors.request.use((config) => {
+PortabilityAPI.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -42,4 +42,4 @@ async function getPortabilityToken(token: string){
     }
 }
 
-export {EasyTermsApi, getUserInfo, getPortabilityToken}
+export {PortabilityAPI, getUserInfo, getPortabilityToken}
