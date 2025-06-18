@@ -12,11 +12,12 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [shareData, setShareData] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleCreate = async () => {
-    setError(""); 
+    setError("");
 
     if (password !== confirmPassword) {
       setError("As senhas não coincidem.");
@@ -33,6 +34,7 @@ const RegisterPage = () => {
         age: Number(age),
         address,
         password,
+        shareData,
       }),
     });
 
@@ -138,6 +140,18 @@ const RegisterPage = () => {
             >
               {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
             </button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input
+              type="checkbox"
+              checked={shareData}
+              onChange={(e) => setShareData(e.target.checked)}
+              id="shareData"
+            />
+            <label htmlFor="shareData" style={{ fontSize: '14px', color: '#333' }}>
+              Permitir portabilidade de dados
+            </label>
           </div>
 
           {error && <p style={{ color: "red", marginTop: '5px' }}>{error}</p>}

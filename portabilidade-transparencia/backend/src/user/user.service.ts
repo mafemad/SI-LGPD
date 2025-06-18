@@ -6,8 +6,7 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
-  userRepository: any;
-  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {}
 
   async create(data: Partial<User>) {
     if (!data.password) {
@@ -27,7 +26,14 @@ export class UserService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = this.userRepo.create({ ...data, password: hashedPassword });
+
+    // Garante que shareData seja true por padrão
+    const user = this.userRepo.create({
+      ...data,
+      password: hashedPassword,
+      shareData: data.shareData ?? true,
+    });
+
     return this.userRepo.save(user);
   }
 
@@ -40,13 +46,12 @@ export class UserService {
     return this.userRepo.find();
   }
 
-async findById(id: number) {
-  return await this.userRepository.findOne({
-    where: { id },
-    select: ['id', 'name', 'cpf', 'email', 'address', 'age'], 
-  });
-}
-
+  async findById(id: number) {
+    return await this.userRepo.findOne({
+      where: { id },
+      select: ['id', 'name', 'cpf', 'email', 'address', 'age', 'shareData'], // adiciona shareData
+    });
+  }
 
   findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
@@ -64,7 +69,7 @@ async findById(id: number) {
     }
 
     await this.userRepo.update(id, data);
-    return this.findById(id); 
+    return this.findById(id);
   }
 
   remove(id: number) {

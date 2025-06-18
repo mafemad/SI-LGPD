@@ -48,22 +48,25 @@ export class UserController {
   @Get('redirect-url')
   async getEncryptedRedirectUrl(@Req() req) {
     const SECRET_KEY = this.configService.get<string>('CRYPTO_SECRET');
-
     const user = await this.userService.findById(req.user.id);
 
-    const safeUser = {
-      name: user.name,
-      cpf: user.cpf,
-      email: user.email,
-      address: user.address,
-      age: user.age,
-    };
+    if (user!.shareData) {
+      throw new ForbiddenException('Você não autorizou o compartilhamento de dados.');
+    }
 
-    const encrypted = CryptoJS.AES.encrypt(JSON.stringify(safeUser), SECRET_KEY).toString();
-    const encoded = encodeURIComponent(encrypted);
+  const safeUser = {
+    name: user!.name,
+    cpf: user!.cpf,
+    email: user!.email,
+    address: user!.address,
+    age: user!.age,
+  };
 
-    return {
-      redirectUrl: `http://localhost:5173/profile?data=${encoded}`,
-    };
-  }
+  const encrypted = CryptoJS.AES.encrypt(JSON.stringify(safeUser), SECRET_KEY).toString();
+  const encoded = encodeURIComponent(encrypted);
+
+  return {
+    redirectUrl: `http://localhost:5173/profile?data=${encoded}`,
+  };
+}
 }

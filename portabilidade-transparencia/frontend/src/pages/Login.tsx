@@ -22,12 +22,10 @@ const LoginPage = () => {
       
         if (res.status === 401) {
           alert("Senha incorreta ou usuário inválido.");
-                    window.location.reload(); 
         } else if (res.status === 403) {
           alert("Muitas tentativas. Tente novamente em 10 minutos.");
         } else {
           alert("Erro ao fazer login.");
-          window.location.reload(); 
         }
         return;
       }
@@ -43,11 +41,10 @@ const LoginPage = () => {
       if (user.email === "admin@email.com") {
         navigate("/admin");
       } else {
-        navigate("/usuario");
+        navigate("/index");
       }
     } catch (err) {
       alert("Erro de conexão com o servidor.");
-      window.location.reload(); 
     }
   };
 
@@ -69,7 +66,7 @@ const LoginPage = () => {
         maxWidth: '400px',
         textAlign: 'center'
       }}>
-        <h2 style={{ marginBottom: '25px', color: '#333', width: '100%' }}>Login</h2>
+        <h2 style={{ marginBottom: '25px', color: '#333', width: '100%' }}>Login Sistema II</h2>
 
         <input
           placeholder="Email"
