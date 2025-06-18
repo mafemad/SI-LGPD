@@ -27,7 +27,6 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // Garante que shareData seja true por padrão
     const user = this.userRepo.create({
       ...data,
       password: hashedPassword,
@@ -49,7 +48,7 @@ export class UserService {
   async findById(id: number) {
     return await this.userRepo.findOne({
       where: { id },
-      select: ['id', 'name', 'cpf', 'email', 'address', 'age', 'shareData'], // adiciona shareData
+      select: ['id', 'name', 'cpf', 'email', 'address', 'age', 'shareData'], 
     });
   }
 

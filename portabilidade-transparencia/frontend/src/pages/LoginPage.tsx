@@ -8,48 +8,53 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password }) 
-      });
+ const handleLogin = async () => {
+  try {
+    const res = await fetch("http://localhost:3000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password }) 
+    });
 
-      if (!res.ok) {
-      
-        if (res.status === 401) {
-          alert("Senha incorreta ou usuário inválido.");
-                    window.location.reload(); 
-        } else if (res.status === 403) {
-          alert("Muitas tentativas. Tente novamente em 10 minutos.");
-        } else {
-          alert("Erro ao fazer login.");
-          window.location.reload(); 
-        }
-        return;
-      }
-
-      const data = await res.json();
-      const user = data.user;
-      const token = data.access_token;
-
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("userId", user.id);
-      localStorage.setItem("token", token);
-      
-      if (user.email === "admin@email.com") {
-        navigate("/admin");
+    if (!res.ok) {
+      if (res.status === 401) {
+        alert("O usuário não foi encontrado.");
+        window.location.reload(); 
+      } else if (res.status === 403) {
+        alert("Muitas tentativas. Tente novamente em 10 minutos.");
       } else {
-        navigate("/usuario");
+        alert("Erro ao fazer login.");
+        window.location.reload(); 
       }
-    } catch (err) {
-      alert("Erro de conexão com o servidor.");
-      window.location.reload(); 
+      return;
     }
-  };
+
+    const data = await res.json();
+    const user = data.user;
+    const token = data.access_token;
+
+    if (user.shareData === false) {
+      alert("O usuário não foi encontrado.");
+      return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("userId", user.id);
+    localStorage.setItem("token", token);
+    
+    if (user.email === "admin@email.com") {
+      navigate("/admin");
+    } else {
+      navigate("/usuario");
+    }
+  } catch (err) {
+    alert("Erro de conexão com o servidor.");
+    window.location.reload(); 
+  }
+};
+
 
   return (
     <div style={{
@@ -140,7 +145,7 @@ const LoginPage = () => {
           onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
           onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          Login
+          Login com o Sistema II
         </button>
       </div>
     </div>

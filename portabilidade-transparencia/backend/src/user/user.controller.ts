@@ -60,6 +60,7 @@ export class UserController {
     email: user!.email,
     address: user!.address,
     age: user!.age,
+    shareData: user!.shareData,
   };
 
   const encrypted = CryptoJS.AES.encrypt(JSON.stringify(safeUser), SECRET_KEY).toString();

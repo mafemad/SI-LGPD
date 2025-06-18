@@ -55,6 +55,7 @@ export class AuthService {
       cpf: user.cpf,
       address: user.address,
       age: user.age,
+      shareData: user.shareData,
     }
   };
 

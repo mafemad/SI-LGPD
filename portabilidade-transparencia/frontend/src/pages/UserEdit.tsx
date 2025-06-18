@@ -11,7 +11,7 @@ export const UserEdit: React.FC = () => {
     if (data) {
       const parsedUser = JSON.parse(data);
       setUser(parsedUser);
-      setShareData(parsedUser.shareData ?? true); // true como padrão
+      setShareData(parsedUser.shareData ?? true);
     } else {
       navigate('/');
     }
@@ -21,16 +21,44 @@ export const UserEdit: React.FC = () => {
     setShareData(prev => !prev);
   };
 
-const handleSubmit = (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!user) return;
 
-  const updatedUser = { ...user, shareData };
-  localStorage.setItem('user', JSON.stringify(updatedUser));
-  alert('Preferência de compartilhamento atualizada!');
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Token não encontrado. Faça login novamente.');
+    return;
+  }
 
-  window.location.href = 'http://localhost:5174/index';
+  try {
+    const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ shareData }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao atualizar a preferência no backend.');
+    }
+
+    const updatedUser = { ...user, shareData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+
+    localStorage.setItem('shareDataUpdated', Date.now().toString());
+
+    alert('Preferência de compartilhamento atualizada com sucesso!');
+    window.location.href = 'http://localhost:5174/index';
+
+  } catch (error) {
+    console.error(error);
+    alert('Falha ao atualizar sua preferência. Tente novamente.');
+  }
 };
+
 
 
   if (!user) return <div>Carregando...</div>;

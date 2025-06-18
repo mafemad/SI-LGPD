@@ -46,7 +46,7 @@ const RegisterPage = () => {
     }
 
     localStorage.setItem("userId", data.id);
-    navigate("/");
+    navigate("/login");
   };
 
   return (

@@ -8,9 +8,14 @@ const Index: React.FC = () => {
   useEffect(() => {
     const data = localStorage.getItem('user');
     if (data) {
-      setUser(JSON.parse(data));
+const parsed = JSON.parse(data);
+setUser({
+  ...parsed,
+  shareData: parsed.shareData ?? true 
+});
+
     } else {
-      navigate('/login'); // Redireciona se não estiver logado
+      navigate('/login');
     }
   }, []);
 
@@ -53,6 +58,10 @@ const Index: React.FC = () => {
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Endereço:</strong> {user.address}</p>
           <p><strong>Idade:</strong> {user.age}</p>
+          <p>
+            <strong>Portabilidade:</strong>{" "}
+            {user.shareData ? "Ativada" : "Desativada"}
+          </p>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>

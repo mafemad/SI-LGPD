@@ -8,6 +8,7 @@ interface User {
   email: string;
   address: string;
   age: number;
+  shareData: boolean;
 }
 
 const SECRET_KEY = 'HFXm!7265EHOa130205';

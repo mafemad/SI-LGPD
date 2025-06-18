@@ -21,7 +21,7 @@ const LoginPage = () => {
       if (!res.ok) {
       
         if (res.status === 401) {
-          alert("Senha incorreta ou usuário inválido.");
+          alert("Usuário não encontrado.");
         } else if (res.status === 403) {
           alert("Muitas tentativas. Tente novamente em 10 minutos.");
         } else {

@@ -22,6 +22,6 @@ export class User {
   @Column()
   password: string; 
 
-    @Column({ default: true }) // <- Aqui está o padrão
+  @Column({ default: true }) 
   shareData: boolean;
 }
